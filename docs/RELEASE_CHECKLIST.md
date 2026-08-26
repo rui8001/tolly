@@ -1,12 +1,15 @@
 # Public release checklist
 
-## Required before the first GitHub push
+## Public release gates
 
 - [x] Verify the upstream Tokei repository's current license declaration and update `THIRD_PARTY_NOTICES.md`.
 - [x] Review upstream-derived implementation and keep explicit attribution; do not reuse upstream branding, screenshots, icons, copywriting, or release binaries.
 - [x] Publish from a new root commit so the old local history containing real `sample_usage.json` data is never pushed.
 - [x] Run `node scripts/check-privacy.mjs` and manually search the public snapshot for usernames, absolute paths, API keys, account IDs, project names, and session IDs.
 - [x] Replace repository/security placeholders with the `rui8001/tolly` project identity.
+- [x] Clone `main` again from the public GitHub repository and build both NSIS and MSI from that clone.
+- [x] Confirm the public commit passes the Windows/Linux, Python 3.10/3.12 GitHub Actions matrix.
+- [x] Generate SHA-256 checksums alongside tagged release installers.
 - [ ] Build and test on a clean Windows 10/11 VM with no system Python installed.
 - [x] Install Visual Studio Build Tools with the “Desktop development with C++” workload.
 - [ ] Configure Windows code signing. Unsigned installers commonly trigger SmartScreen warnings.
