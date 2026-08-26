@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-08-26
+
 ### Added
 
 - Windows 托盘应用、单实例控制、失焦隐藏和托盘定位。
@@ -17,4 +19,5 @@
 - 项目名称在进入界面前会移除用户名、主目录片段和长标识符。
 - 默认只读取本地数据；网络行为和数据边界记录在隐私说明中。
 
-[Unreleased]: https://github.com/rui8001/tolly/commits/main
+[Unreleased]: https://github.com/rui8001/tolly/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/rui8001/tolly/releases/tag/v1.0.0

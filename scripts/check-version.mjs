@@ -5,6 +5,11 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const read = (relative) => readFileSync(resolve(root, relative), "utf8");
 const jsonVersion = (relative) => JSON.parse(read(relative)).version;
+const pythonVersion = (relative) => {
+  const match = read(relative).match(/^__version__\s*=\s*["']([^"']+)["']/m);
+  if (!match) throw new Error(`Could not read __version__ from ${relative}`);
+  return match[1];
+};
 const tomlVersion = (relative, packageName) => {
   const source = read(relative);
   const section = packageName
@@ -20,6 +25,7 @@ const versions = new Map([
   ["tally-win/src-tauri/Cargo.toml", tomlVersion("tally-win/src-tauri/Cargo.toml")],
   ["tally-win/src-tauri/Cargo.lock", tomlVersion("tally-win/src-tauri/Cargo.lock", "tolly-windows")],
   ["tally-engine/pyproject.toml", tomlVersion("tally-engine/pyproject.toml")],
+  ["tally-engine/engine/__init__.py", pythonVersion("tally-engine/engine/__init__.py")],
 ]);
 
 const unique = new Set(versions.values());

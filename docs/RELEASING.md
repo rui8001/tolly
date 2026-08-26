@@ -10,6 +10,7 @@ Tolly 使用语义化版本。正式发布由 `vX.Y.Z` 标签触发，GitHub Act
    - `tally-win/src-tauri/tauri.conf.json`
    - `tally-win/src-tauri/Cargo.toml`
    - `tally-engine/pyproject.toml`
+   - `tally-engine/engine/__init__.py`
 3. 运行 `cargo check --manifest-path tally-win/src-tauri/Cargo.toml` 更新并验证 `Cargo.lock`。
 4. 将 `CHANGELOG.md` 的 Unreleased 内容整理到带发布日期的版本小节。
 5. 运行完整检查：
@@ -31,8 +32,8 @@ cargo check --manifest-path src-tauri/Cargo.toml
 先把发布提交合并到 `main`，并确认该提交的 CI 全部通过。然后从同一提交创建并推送标签：
 
 ```powershell
-git tag -a v0.1.0 -m "Tolly v0.1.0"
-git push origin v0.1.0
+git tag -a v1.0.0 -m "Tolly v1.0.0"
+git push origin v1.0.0
 ```
 
 工作流会拒绝与源码版本号不一致的标签。成功后，检查 Release 中是否只有 NSIS、MSI 和 SHA-256 校验和文件，并在一台未安装 Python 的干净 Windows 10/11 环境复验下载产物。

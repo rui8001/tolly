@@ -10,7 +10,7 @@ body:
     id: version
     attributes:
       label: Tolly 版本
-      placeholder: 例如 0.1.0 或 main 的提交号
+      placeholder: 例如 1.0.0 或 main 的提交号
     validations:
       required: true
   - type: dropdown

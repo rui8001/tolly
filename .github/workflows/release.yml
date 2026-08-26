@@ -69,4 +69,4 @@ jobs:
             Get-ChildItem $bundle -Recurse -File | Where-Object { $_.Extension -in ".exe", ".msi" }
             Get-Item (Join-Path $bundle "SHA256SUMS.txt")
           )
-          gh release create "${{ github.ref_name }}" $assets.FullName --generate-notes --verify-tag
+          gh release create "${{ github.ref_name }}" $assets.FullName --generate-notes --notes "Windows installers are currently unsigned. Verify the matching entry in SHA256SUMS.txt before installation." --verify-tag
