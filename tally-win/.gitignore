@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+.Python
+
+# Node / Tauri
+node_modules/
+dist/
+target/
+
+# 临时验证产物(非引擎交付物)
+scripts/_*.json
+scripts/_*.txt
+
+# 系统
+.DS_Store
+Thumbs.db

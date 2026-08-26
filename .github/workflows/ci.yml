@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  engine:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.10", "3.12"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m unittest discover -s tests -v
+        working-directory: tally-engine
+
+  desktop:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: tally-win/pnpm-lock.yaml
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: pnpm install --frozen-lockfile
+        working-directory: tally-win
+      - run: pnpm web:test
+        working-directory: tally-win
+      - run: pnpm web:build
+        working-directory: tally-win
+      - run: pnpm preview:build
+        working-directory: tally-win
+      - run: cargo fmt --manifest-path tally-win/src-tauri/Cargo.toml -- --check
+      - run: cargo check --manifest-path tally-win/src-tauri/Cargo.toml
+      - run: node scripts/check-privacy.mjs

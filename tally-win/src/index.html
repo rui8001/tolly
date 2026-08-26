@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <title>Tolly</title>
+    <script>
+      window.__TOLLY_BOOT_STATE__ = "html";
+      if (location.protocol === "file:" && /\/src\/index\.html$/i.test(location.pathname)) {
+        location.replace(new URL("../preview-dist/index.html", location.href));
+      }
+      window.setTimeout(() => {
+        if (window.__TOLLY_BOOT_STATE__ !== "html") return;
+        document.documentElement.classList.add("browser-preview");
+        const content = document.getElementById("content");
+        if (content) {
+          content.innerHTML = `
+            <div class="empty startup-error">
+              <strong>前端脚本没有启动</strong>
+              <span>当前 1420 端口不是 Tolly 的 Vite 开发服务，或仍在显示旧缓存。</span>
+              <span>请关闭这个页面，双击仓库根目录的 <code>start-preview.cmd</code>。</span>
+            </div>`;
+        }
+      }, 2500);
+    </script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- 顶栏：品牌 + 操作 -->
+      <header class="top">
+        <div class="brand">
+          <svg class="logo" viewBox="0 0 512 512" aria-hidden="true">
+            <defs><linearGradient id="ui-logo-bg" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse"><stop stop-color="#B794FF"/><stop offset=".48" stop-color="#8258F2"/><stop offset="1" stop-color="#5D3BC2"/></linearGradient></defs>
+            <rect x="28" y="28" width="456" height="456" rx="112" fill="#14111F"/><rect x="44" y="44" width="424" height="424" rx="98" fill="url(#ui-logo-bg)"/>
+            <path d="M140 326V222M256 326V146M372 326V250" stroke="#F6F1FF" stroke-width="48" stroke-linecap="round"/><path d="M140 210L256 134L372 238" fill="none" stroke="#FFF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <div class="brand-txt">
+            <div class="bname">Tolly</div>
+            <div class="bsub">AI 编程用量</div>
+          </div>
+        </div>
+        <div class="top-right">
+          <span class="updated" id="updated"></span>
+          <div class="view-switch" id="viewSwitch"></div>
+          <button class="icon-btn" id="settingsBtn" title="设置">&#9881;</button>
+        </div>
+      </header>
+
+      <!-- 周期 tab：今日 昨日 本周 上周 本月 本年 -->
+      <nav class="periods" id="periods"></nav>
+
+      <!-- 内容：工具大卡 / 项目 / 回顾 -->
+      <main class="content" id="content">
+        <div class="empty">正在读取用量…</div>
+      </main>
+
+      <!-- 页脚 -->
+      <footer class="foot">
+        <div class="foot-left">
+          <div class="undetected" id="undetected"></div>
+          <div class="cost-note">成本按 API 价估算,非订阅实付</div>
+        </div>
+        <div class="foot-actions">
+          <button class="fbtn" id="copyBtn" title="复制摘要">&#10697; 复制</button>
+          <button class="fbtn" id="refreshBtn" title="刷新">&#8635; 刷新</button>
+          <button class="fbtn danger" id="quitBtn" title="退出">&#9211; 退出</button>
+        </div>
+      </footer>
+    </div>
+
+    <!-- 设置弹层 -->
+    <div class="modal-mask" id="settingsMask">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-head">
+          <h3>设置</h3>
+          <button class="icon-btn" id="settingsClose" title="关闭">&times;</button>
+        </div>
+        <div class="modal-sub">你可以为任意工具设置自己的每周 Token 预算。卡片显示的是“预算剩余”，不是服务商账户的真实配额；所有设置只保存在本机。</div>
+        <div class="set-row">
+          <label class="set-label">每周重置日</label>
+          <select id="resetDay" class="set-input">
+            <option value="0">周一</option><option value="1">周二</option><option value="2">周三</option>
+            <option value="3">周四</option><option value="4">周五</option><option value="5">周六</option><option value="6">周日</option>
+          </select>
+        </div>
+        <div class="set-list" id="settingsList"></div>
+        <div class="modal-foot">
+          <button class="fbtn" id="settingsCancel">取消</button>
+          <button class="fbtn primary" id="settingsSave">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tip" class="tip"></div>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>

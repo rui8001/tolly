@@ -1,0 +1,50 @@
+# --- Build artifacts (Rust / Tauri / Node) ---
+/target/
+**/target/
+node_modules/
+/.pnpm-store/
+dist/
+preview-dist/
+build/
+.sidecar-build/
+tally-win/src-tauri/binaries/*.exe
+tally-win/src-tauri/binaries/tally-engine-*
+tally-win/src-tauri/gen/
+tally-win/src-tauri/icons/android/
+tally-win/src-tauri/icons/ios/
+tally-win/src-tauri/icons/StoreLogo.png
+tally-win/src-tauri/icons/Square*.png
+tally-win/src-tauri/icons/64x64.png
+tally-win/src-tauri/icons/icon.icns
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+venv/
+
+# --- Engine runtime / debug scratch ---
+_chk*
+_wrapped_extract*
+_patch*.py
+_render_test.cjs
+_dom*
+*.log
+/list_all.py
+/list_procs.py
+/tally-win/windows-path-audit.md
+
+# --- 用户私有配置（各人不同，不入库） ---
+settings.json
+
+# --- WorkBuddy internals ---
+.workbuddy/
+
+# --- Upstream reference clone (verbatim third-party source, not ours) ---
+upstream-ref/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+desktop.ini

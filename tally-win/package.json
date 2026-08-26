@@ -1,0 +1,34 @@
+{
+  "name": "tolly-windows",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.19.0",
+  "type": "module",
+  "description": "Tolly — 本地优先的 Windows AI 编程用量托盘应用。",
+  "license": "MIT",
+  "homepage": "https://github.com/rui8001/tolly",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rui8001/tolly.git"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 1420 --strictPort",
+    "web:build": "vite build",
+    "preview:build": "vite build --mode standalone",
+    "web:test": "node --test tests/*.test.mjs",
+    "sidecar": "node scripts/build-sidecar.mjs",
+    "icons": "tauri icon assets/tolly-icon.svg",
+    "tauri": "tauri",
+    "build": "tauri build",
+    "verify": "node ../tally-engine/scripts/verify-engine.mjs",
+    "check": "pnpm web:test && pnpm web:build && pnpm preview:build && pnpm verify"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.0.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "vite": "^7.1.0",
+    "vite-plugin-singlefile": "^2.3.3"
+  }
+}

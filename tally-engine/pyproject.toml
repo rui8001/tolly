@@ -1,0 +1,26 @@
+[project]
+name = "tally-usage-engine"
+version = "0.1.0"
+description = "Local, cross-platform AI coding usage aggregation engine"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/rui8001/tolly"
+Repository = "https://github.com/rui8001/tolly.git"
+Issues = "https://github.com/rui8001/tolly/issues"
+
+[project.optional-dependencies]
+zstd = ["zstandard>=0.23,<1"]
+build = ["pyinstaller>=6.0,<7", "zstandard>=0.23,<1"]
+
+[project.scripts]
+tally-engine = "engine.cli:main_cli"
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["engine", "engine.collectors", "engine.core"]

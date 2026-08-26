@@ -1,0 +1,22 @@
+{
+  "demo": {
+    "ranges": {
+      "today": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"demo/model-small": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]},
+      "yesterday": {"in": 0, "out": 0, "cr": 0, "cw": 0, "reason": 0, "cost": 0, "models": {}, "sessions": []},
+      "week": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"demo/model-small": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]},
+      "last_week": {"in": 0, "out": 0, "cr": 0, "cw": 0, "reason": 0, "cost": 0, "models": {}, "sessions": []},
+      "month": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"demo/model-small": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]},
+      "year": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"demo/model-small": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]},
+      "all": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"demo/model-small": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]}
+    }
+  },
+  "_daily": {
+    "2026-08-24": {"in": 3000, "out": 1200, "cr": 4800, "cw": 0, "reason": 300, "cost": 0.18, "models": {}},
+    "2026-08-25": {"in": 4600, "out": 1900, "cr": 7100, "cw": 300, "reason": 400, "cost": 0.28, "models": {}},
+    "2026-08-26": {"in": 4800, "out": 2700, "cr": 9700, "cw": 600, "reason": 500, "cost": 0.38, "models": {}}
+  },
+  "_projects": {
+    "demo project": {"tools": ["demo"], "last": "2026-08-26", "ranges": {"all": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {}, "sessions": ["demo-session"]}}}
+  },
+  "_pricing": {"models": {}, "aliases": {}}
+}

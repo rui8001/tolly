@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Tolly",
+  "version": "0.1.0",
+  "identifier": "app.tolly.windows",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://127.0.0.1:1420",
+    "beforeDevCommand": "node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 1420 --strictPort",
+    "beforeBuildCommand": "node node_modules/vite/bin/vite.js build && node scripts/build-sidecar.mjs"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Tolly",
+        "width": 420,
+        "height": 680,
+        "minWidth": 360,
+        "minHeight": 520,
+        "maxWidth": 560,
+        "maxHeight": 920,
+        "resizable": true,
+        "visible": false,
+        "decorations": false,
+        "transparent": true,
+        "shadow": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "center": false
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi", "nsis"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png",
+      "icons/icon.ico"
+    ],
+    "externalBin": ["binaries/tally-engine"],
+    "shortDescription": "本地优先的 AI 编程用量托盘应用",
+    "longDescription": "Tolly 在本机汇总 AI 编程工具日志中的 Token 用量，并按公开 API 价格估算成本。"
+  }
+}
