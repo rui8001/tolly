@@ -4,6 +4,13 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   engine:
     strategy:
@@ -34,6 +41,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
+      - run: node scripts/check-version.mjs
       - run: pnpm install --frozen-lockfile
         working-directory: tally-win
       - run: pnpm web:test

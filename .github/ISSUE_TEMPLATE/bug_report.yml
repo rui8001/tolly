@@ -1,0 +1,63 @@
+name: Bug 报告
+description: 报告可复现的错误、崩溃或数据异常
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: 请勿上传真实日志、提示词、账号标识、API 密钥或包含用户名的完整路径。
+  - type: input
+    id: version
+    attributes:
+      label: Tolly 版本
+      placeholder: 例如 0.1.0 或 main 的提交号
+    validations:
+      required: true
+  - type: dropdown
+    id: installation
+    attributes:
+      label: 运行方式
+      options:
+        - NSIS 安装包
+        - MSI 安装包
+        - 源码开发模式
+        - Web 匿名预览
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows 版本
+      placeholder: 例如 Windows 11 24H2 x64
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      description: 使用人工匿名数据描述最短复现步骤。
+      placeholder: |
+        1. 打开……
+        2. 点击……
+        3. 出现……
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期与实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: 已脱敏的诊断信息
+      description: 粘贴前删除用户名、主目录、提示词、会话 ID、密钥和账号信息。
+      render: shell
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: 隐私确认
+      options:
+        - label: 我确认以上内容不包含真实日志、提示词、密钥、账号信息或个人路径。
+          required: true

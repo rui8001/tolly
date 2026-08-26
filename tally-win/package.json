@@ -16,12 +16,13 @@
     "web:build": "vite build",
     "preview:build": "vite build --mode standalone",
     "web:test": "node --test tests/*.test.mjs",
+    "version:check": "node ../scripts/check-version.mjs",
     "sidecar": "node scripts/build-sidecar.mjs",
     "icons": "tauri icon assets/tolly-icon.svg",
     "tauri": "tauri",
     "build": "tauri build",
     "verify": "node ../tally-engine/scripts/verify-engine.mjs",
-    "check": "pnpm web:test && pnpm web:build && pnpm preview:build && pnpm verify"
+    "check": "pnpm version:check && pnpm web:test && pnpm web:build && pnpm preview:build && pnpm verify"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0"

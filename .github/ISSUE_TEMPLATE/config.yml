@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全漏洞私密报告
+    url: https://github.com/rui8001/tolly/security/advisories/new
+    about: 涉及本地数据、路径、命令执行或密钥的问题请勿公开提交。

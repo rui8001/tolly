@@ -1,5 +1,8 @@
 # Tolly for Windows
 
+[![CI](https://github.com/rui8001/tolly/actions/workflows/ci.yml/badge.svg)](https://github.com/rui8001/tolly/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 Tolly 是一个本地优先的 Windows 系统托盘应用，用来汇总 AI 编程工具写入本机的 Token 用量，并按公开 API 价格估算成本。
 
 项目受到 macOS 开源项目 [Tokei](https://github.com/cclank/tokei) 的产品方向启发。部分本地日志采集规则和价格映射依据其 MIT 实现重构；Windows 外壳、界面资源和交互实现使用独立名称并重新设计。Tolly 不是 Tokei 的官方 Windows 版本，也不代表任何模型或工具服务商。
@@ -75,4 +78,4 @@ pnpm build
 
 本项目代码采用 [MIT License](LICENSE)。第三方组件、上游参考关系和归属说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。维护者发布版本前应完成 [发布检查清单](docs/RELEASE_CHECKLIST.md)。
 
-欢迎通过 [CONTRIBUTING.md](CONTRIBUTING.md) 参与，安全与隐私问题请按 [SECURITY.md](SECURITY.md) 私下报告。
+版本变化记录见 [CHANGELOG.md](CHANGELOG.md)，维护者发布流程见 [docs/RELEASING.md](docs/RELEASING.md)。欢迎通过 [CONTRIBUTING.md](CONTRIBUTING.md) 参与，安全与隐私问题请按 [SECURITY.md](SECURITY.md) 私下报告。
