@@ -10,10 +10,13 @@
 - [x] Clone `main` again from the public GitHub repository and build both NSIS and MSI from that clone.
 - [x] Confirm the public commit passes the Windows/Linux, Python 3.10/3.12 GitHub Actions matrix.
 - [x] Generate SHA-256 checksums alongside tagged release installers.
+- [x] Enable GitHub private vulnerability reporting.
 - [ ] Build and test on a clean Windows 10/11 VM with no system Python installed.
 - [x] Install Visual Studio Build Tools with the “Desktop development with C++” workload.
 - [ ] Configure Windows code signing. Unsigned installers commonly trigger SmartScreen warnings.
-- [ ] Verify MSI/NSIS install, upgrade, uninstall, single-instance behavior, tray positioning, and startup behavior.
+- [x] Verify NSIS/MSI install, bundled-sidecar launch, uninstall, single-instance behavior, and hide-to-tray/restore behavior on a real Windows host. See [Windows installer verification](WINDOWS_INSTALL_TEST.md).
+- [ ] Verify an in-place upgrade from an older tagged version once one exists.
+- [x] Confirm that 0.1.0 does not expose an autostart feature; test startup-at-login behavior only if that feature is implemented.
 - [ ] Tag only from a clean tree after CI passes.
 
 ## History-cleaning record
