@@ -44,6 +44,8 @@ jobs:
         working-directory: tally-win
       - run: pnpm build
         working-directory: tally-win
+        env:
+          TALLY_PYTHON: python
       - name: Create SHA-256 checksums
         shell: pwsh
         run: |
