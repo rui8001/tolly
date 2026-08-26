@@ -43,5 +43,8 @@ jobs:
       - run: pnpm preview:build
         working-directory: tally-win
       - run: cargo fmt --manifest-path tally-win/src-tauri/Cargo.toml -- --check
+      - name: Create sidecar placeholder for cargo check
+        shell: pwsh
+        run: New-Item -ItemType File -Force -Path tally-win/src-tauri/binaries/tally-engine-x86_64-pc-windows-msvc.exe
       - run: cargo check --manifest-path tally-win/src-tauri/Cargo.toml
       - run: node scripts/check-privacy.mjs
