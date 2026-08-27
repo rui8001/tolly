@@ -1,15 +1,15 @@
 # Architecture
 
 ```text
-local tool logs / read-only databases
-                 |
-                 v
-        tally-engine collectors
-                 |
-       stable JSON contract
-                 |
-                 v
- Tauri command <-> Vite UI <-> tray window
+local logs / read-only databases / local provider interfaces
+                         |
+                         v
+                tally-engine collectors
+                         |
+                stable JSON contract
+                         |
+                         v
+         Tauri command <-> Vite UI <-> tray window
 ```
 
 ## Single engine source
@@ -18,7 +18,11 @@ All collectors, pricing resolution, date bucketing, replay deduplication, projec
 
 ## Contract
 
-Tool keys contain `ranges`, `daily`, and `projects`. Metadata keys start with `_`: `_pricing`, `_daily`, `_projects`, and optional `_errors`. Range buckets contain `in`, `out`, `cr`, `cw`, `reason`, `cost`, `models`, and `sessions`.
+Tool keys contain `ranges`, `daily`, `projects`, and optional `quota`. Metadata keys start with `_`: `_pricing`, `_daily`, `_projects`, and optional `_errors`. Range buckets contain `in`, `out`, `cr`, `cw`, `reason`, `cost`, `models`, and `sessions`.
+
+`quota` is an extensible, provider-authored balance block. The UI prefers a verified `weekly` window, falls back to `credits`, and hides the block when neither exists. Collectors may only populate it from explicit provider fields such as `used_percent`, `resets_at`, or `balance`; consumption totals and estimated cost are never converted into an account balance. The Codex collector uses the installed app server's read-only `account/rateLimits/read` method and accepts only the account-wide `codex` bucket.
+
+Collector-specific non-token metrics may be added to range buckets, for example WorkBuddy's `credits_used`. Estimates must be marked at tool level with `estimated: true`. A detector with no trustworthy usage field returns `detected: true` and a user-facing note instead of a fabricated total.
 
 The UI treats this as a versioned internal API: it never scrapes collector files directly and never invents service-provider quota values.
 

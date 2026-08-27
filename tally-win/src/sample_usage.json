@@ -1,5 +1,6 @@
 {
   "demo": {
+    "quota": {"source": "local_log", "weekly": {"used_percent": 36, "remaining_percent": 64, "window_minutes": 10080, "resets_at": 1800000000}},
     "ranges": {
       "today": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"demo/model-small": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]},
       "yesterday": {"in": 0, "out": 0, "cr": 0, "cw": 0, "reason": 0, "cost": 0, "models": {}, "sessions": []},

@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import previewUsage from "./sample_usage.json";
 import { displayProject } from "./project-name.js";
+import { selectQuota } from "./quota.js";
 
 window.__TOLLY_BOOT_STATE__ = "module";
 const IS_TAURI = Boolean(window.__TAURI_INTERNALS__);
@@ -9,7 +10,7 @@ document.documentElement.classList.toggle("browser-preview", !IS_TAURI);
 
 const TOOL_LABELS = {
   claude: "Claude Code", codex: "Codex", gemini: "Gemini", grok: "Grok",
-  qwenwork: "千问办公", qoderwork: "QoderWork", qoder_ide: "Qoder", qodercli: "Qoder CLI",
+  qwenwork: "千问办公", doubaowork: "豆包工作", qoderwork: "QoderWork", qoder_ide: "Qoder", qodercli: "Qoder CLI",
   hermes: "Hermes", zcode: "ZCode", mimocode: "MimoCode", openclaw: "OpenClaw",
   pi: "Pi", prime_agent: "Prime Agent", workbuddy: "WorkBuddy", deepseek_harness: "DeepSeek",
   opencode: "OpenCode", qwencode: "Qwen Code", kimicode: "Kimi Code",
@@ -17,6 +18,7 @@ const TOOL_LABELS = {
 const TOOL_COLOR_MAP = {
   workbuddy: "#3ec6a0",         // 绿
   qwenwork: "#6fce9f",          // 千问办公 浅绿
+  doubaowork: "#4fb8ff",        // 豆包工作 蓝
   qwencode: "#79d6a5",          // Qwen Code 浅绿
   codex: "#5b8def",             // 蓝
   claude: "#d97757",            // Anthropic 橙
@@ -54,7 +56,7 @@ const VIEWS = [
 ];
 
 let usageCache = null;
-let settingsCache = { watch: [], weekly_limits: {}, effective_limits: {}, reset_day: 0, plans: {} };
+let settingsCache = { hidden_tools: [], refresh_seconds: 30, qwenwork_quota_enabled: false };
 let currentPeriod = "today";
 let currentView = "usage";
 let usingFallback = false;
@@ -69,6 +71,10 @@ function human(n) {
   return String(Math.round(n));
 }
 function fmtCost(c) { return "$" + (Number(c || 0)).toFixed(2); }
+function fmtPercent(value) {
+  const pct = Math.min(Math.max(Number(value) || 0, 0), 100);
+  return pct > 99 && pct < 100 ? pct.toFixed(1) + "%" : pct.toFixed(0) + "%";
+}
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -91,55 +97,24 @@ function presentTools() {
   return Object.keys(usageCache).filter((k) => !k.startsWith("_"));
 }
 
-/* ---------------- 自定义周预算 ---------------- */
-function nextReset(resetDay) {
-  const now = new Date();
-  const todayIdx = (now.getDay() + 6) % 7; // 转成 0=周一…6=周日
-  let diff = (Number(resetDay || 0) - todayIdx + 7) % 7;
-  if (diff === 0) diff = 7;
-  const d = new Date(now); d.setDate(now.getDate() + diff);
-  return `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-function weeklyRemaining(tool) {
-  // 仅使用用户主动配置的预算，不把估算值冒充服务商配额。
-  const limit = (settingsCache.effective_limits || {})[tool];
-  if (!limit) return null;
-  const wk = getRange((usageCache || {})[tool], "week");
-  const used = tokensOf(wk);
-  const rem = Math.max(0, (1 - used / Number(limit))) * 100;
-  return { pct: rem, used, limit: Number(limit), reset: nextReset(settingsCache.reset_day) };
-}
-
 /* ---------------- 设置 ---------------- */
-async function fetchJson(url, timeoutMs = 8000) {
-  const ctl = new AbortController();
-  const t = setTimeout(() => ctl.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, { signal: ctl.signal });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    return await res.json();
-  } finally {
-    clearTimeout(t);
-  }
-}
 async function loadSettings() {
   try {
     const s = IS_TAURI
       ? await invoke("get_settings")
       : JSON.parse(localStorage.getItem("tolly-settings") || "{}");
-    const weeklyLimits = s.weekly_limits || {};
     settingsCache = {
-      watch: s.watch || [], weekly_limits: weeklyLimits,
-      effective_limits: weeklyLimits, reset_day: s.reset_day ?? 0, plans: s.plans || {},
+      hidden_tools: Array.isArray(s.hidden_tools) ? s.hidden_tools : [],
+      refresh_seconds: [15, 30, 60, 120].includes(Number(s.refresh_seconds)) ? Number(s.refresh_seconds) : 30,
+      qwenwork_quota_enabled: s.qwenwork_quota_enabled === true,
     };
   } catch (e) { /* 无设置文件时用默认 */ }
 }
 async function saveSettings() {
   const serializable = {
-    watch: settingsCache.watch || [],
-    weekly_limits: settingsCache.weekly_limits || {},
-    reset_day: settingsCache.reset_day ?? 0,
-    plans: settingsCache.plans || {},
+    hidden_tools: settingsCache.hidden_tools || [],
+    refresh_seconds: settingsCache.refresh_seconds || 30,
+    qwenwork_quota_enabled: settingsCache.qwenwork_quota_enabled === true,
   };
   if (IS_TAURI) await invoke("save_settings", { settings: serializable });
   else localStorage.setItem("tolly-settings", JSON.stringify(serializable));
@@ -147,11 +122,6 @@ async function saveSettings() {
 }
 
 /* ---------------- 卡片渲染 ---------------- */
-function hexToRgba(hex, a) {
-  const n = parseInt(String(hex).replace("#", ""), 16);
-  if (Number.isNaN(n)) return `rgba(139,92,246,${a})`;
-  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
-}
 function hitDonut(pct, color) {
   const r = 9, c = 2 * Math.PI * r, off = c * (1 - pct / 100);
   return `<svg width="26" height="26" viewBox="0 0 26 26">
@@ -160,8 +130,23 @@ function hitDonut(pct, color) {
       stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" stroke-linecap="round" transform="rotate(-90 13 13)"/>
   </svg>`;
 }
-function statItem(icon, cls, label, value, color) {
-  return `<div class="stat"><span class="sic ${cls}" style="color:${color};background:${hexToRgba(color, 0.14)}">${icon}</span><div><div class="sl">${label}</div><div class="sv">${value}</div></div></div>`;
+function statItem(icon, cls, label, value) {
+  return `<div class="stat"><span class="sic ${cls}">${icon}</span><div><div class="sl">${label}</div><div class="sv">${value}</div></div></div>`;
+}
+function quotaHtml(tool, color) {
+  const providerQuota = selectQuota((usageCache || {})[tool]);
+  const todayCredits = Number(getRange((usageCache || {})[tool], "today").credits_used || 0);
+  const quota = providerQuota || (todayCredits > 0 ? {
+    label: "今日消耗",
+    valueText: `${todayCredits.toLocaleString("zh-CN", { maximumFractionDigits: 2 })} 积分`,
+    remainingPercent: null,
+  } : null);
+  if (!quota) return "";
+  const pct = Number.isFinite(quota.remainingPercent) ? quota.remainingPercent : null;
+  const barColor = pct === null || pct >= 50 ? color : pct >= 20 ? "#f2b705" : "#ef6f6f";
+  const reset = quota.resetText ? `<span class="cq-reset">重置 ${escapeHtml(quota.resetText)}</span>` : "";
+  const bar = pct === null ? "" : `<div class="cq-bar"><i style="width:${pct.toFixed(1)}%;background:${barColor}"></i></div>`;
+  return `<div class="cquota"><div class="cq-top"><span>${escapeHtml(quota.label)}</span><strong>${escapeHtml(quota.valueText)}</strong></div>${reset}${bar}</div>`;
 }
 function modelRows(models, color) {
   const arr = Object.entries(models || {}).map(([m, v]) => ({ m, tokens: tokensOf(v), cost: v.cost || 0 }))
@@ -181,46 +166,44 @@ function renderCard(tool) {
   const hit = (r.in || 0) + (r.cr || 0) > 0 ? (r.cr || 0) / ((r.in || 0) + (r.cr || 0)) * 100 : null;
 
   const stats = [];
-  stats.push(statItem("$", "orange", "≈成本", fmtCost(r.cost), color));
-  if (hit !== null) stats.push(`<div class="chit">${hitDonut(hit, color)}<div><div class="sl">Cache Hit</div><div class="sv">${hit.toFixed(0)}%</div></div></div>`);
-  stats.push(statItem("↓", "blue", "输入", human(r.in), color));
-  if ((r.cr || 0) > 0) stats.push(statItem("⚡", "teal", "缓存读", human(r.cr), color));
-  stats.push(statItem("↑", "green", "输出", human(r.out), color));
-  if ((r.cw || 0) > 0) stats.push(statItem("⬇", "purple", "缓存写", human(r.cw), color));
-  if ((r.reason || 0) > 0) stats.push(statItem("🧠", "purple", "推理", human(r.reason), color));
+  stats.push(statItem("$", "cost", "≈成本", fmtCost(r.cost)));
+  if (hit !== null) stats.push(`<div class="chit">${hitDonut(hit, color)}<div><div class="sl">命中</div><div class="sv">${fmtPercent(hit)}</div></div></div>`);
+  stats.push(statItem("↓", "input", "输入", human(r.in)));
+  if ((r.cr || 0) > 0) stats.push(statItem("↯", "cache", "缓存读", human(r.cr)));
+  stats.push(statItem("↑", "output", "输出", human(r.out)));
+  if ((r.cw || 0) > 0) stats.push(statItem("⇣", "cache-write", "缓存写", human(r.cw)));
+  if ((r.reason || 0) > 0) stats.push(statItem("✦", "reason", "推理", human(r.reason)));
 
   const models = r.models || {};
   const mcount = Object.keys(models).length;
 
-  const wr = weeklyRemaining(tool);
-  let weekHtml = "";
-  if (wr) {
-    // 进度条默认用工具品牌色；仅剩余过低时给警示色（语义提示）
-    const barColor = wr.pct >= 50 ? color : wr.pct >= 20 ? "#f2b705" : "#ef6f6f";
-    weekHtml = `<div class="cweek"><div class="cw-top"><span class="t">周预算剩余</span>
-      <span class="v">${wr.pct.toFixed(0)}%<span class="reset">重置 ${wr.reset}</span></span></div>
-      <div class="cw-bar"><i style="width:${wr.pct.toFixed(1)}%;background:${barColor}"></i></div></div>`;
-  }
-  const plan = (settingsCache.plans || {})[tool];
-  const planHtml = plan ? `<div class="cplan"><span>plan</span><span class="plan-badge">${escapeHtml(plan)}</span></div>` : "";
+  const balanceHtml = quotaHtml(tool, color);
+  const estimated = data.estimated === true;
+  const totalLabel = estimated ? `${periodLabel(currentPeriod)} 估算总量` : `${periodLabel(currentPeriod)} 总量`;
+  const statusOnly = total === 0 && data.detected === true;
+  const statusHtml = statusOnly ? `<div class="detected-note">${escapeHtml(data.note || "已检测到本地数据")}</div>` : "";
 
-  return `<div class="card">
+  return `<div class="card" style="--tool-color:${color};--tool-tint:${color}22">
     <div class="card-head"><span class="cdot" style="background:${color}"></span>
       <span class="cname">${TOOL_LABELS[tool] || tool}</span>
-      ${sessions ? `<span class="csess">${sessions}</span>` : ""}
-      <span class="cicon">▤</span></div>
-    <div class="cbig">${human(total)}</div>
-    <div class="cbig-sub">${periodLabel(currentPeriod)} 总量</div>
-    <div class="cstats">${stats.join("")}</div>
+      ${sessions ? `<span class="csess">${sessions}</span>` : ""}</div>
+    <div class="coverview${balanceHtml ? " has-quota" : ""}">
+      <div class="ctotal"><div class="cbig">${human(total)}</div>
+        <div class="cbig-sub">${totalLabel}</div></div>
+      ${balanceHtml}
+    </div>
+    ${statusHtml || `<div class="cstats">${stats.join("")}</div>
     <button class="cmodels" data-tool="${tool}">● 按模型 (${mcount}) <span class="chev">›</span></button>
-    <div class="cmodel-list" id="ml-${tool}">${modelRows(models, color)}</div>
-    ${weekHtml}${planHtml}
+    <div class="cmodel-list" id="ml-${tool}">${modelRows(models, color)}</div>`}
   </div>`;
 }
 function renderUsage() {
+  const hidden = new Set(settingsCache.hidden_tools || []);
   const tools = presentTools()
-    .map((t) => ({ t, total: tokensOf(getRange(usageCache[t], currentPeriod)), cost: getRange(usageCache[t], currentPeriod).cost || 0 }))
-    .filter((x) => x.total > 0 || x.cost > 0)
+    .filter((t) => !hidden.has(t))
+    .map((t) => ({ t, total: tokensOf(getRange(usageCache[t], currentPeriod)), cost: getRange(usageCache[t], currentPeriod).cost || 0,
+      credits: Number(getRange(usageCache[t], "today").credits_used || 0), detected: usageCache[t].detected === true }))
+    .filter((x) => x.total > 0 || x.cost > 0 || x.credits > 0)
     .sort((a, b) => b.cost - a.cost || b.total - a.total);
   if (!tools.length) return '<div class="empty">该周期暂无用量数据</div>';
   return `<div class="cards">${tools.map((x) => renderCard(x.t)).join("")}</div>`;
@@ -305,43 +288,38 @@ function buildSettingsList() {
   if (!host) return;
   const tools = Object.keys(TOOL_LABELS);
   host.innerHTML = tools.map((t) => {
-    const watched = (settingsCache.watch || []).includes(t);
-    const limit = (settingsCache.weekly_limits || {})[t] || "";
-    const plan = (settingsCache.plans || {})[t] || "";
+    const visible = !(settingsCache.hidden_tools || []).includes(t);
     return `<div class="set-item" data-tool="${t}">
-      <input type="checkbox" class="sw-watch" ${watched ? "checked" : ""} />
+      <input type="checkbox" class="sw-visible" ${visible ? "checked" : ""} />
       <div class="si-name"><span class="cdot" style="background:${colorFor(t)}"></span>${TOOL_LABELS[t]}</div>
-      <input type="number" class="set-input sw-limit" placeholder="周预算 token" value="${limit}" min="0" />
-      <input type="text" class="set-input sw-plan" placeholder="plan" value="${escapeHtml(plan)}" />
     </div>`;
   }).join("");
 }
 function openSettings() {
-  const rd = $("resetDay"); if (rd) rd.value = String(settingsCache.reset_day ?? 0);
+  const refreshSelect = $("refreshSeconds");
+  if (refreshSelect) refreshSelect.value = String(settingsCache.refresh_seconds || 30);
+  const qwenQuota = $("qwenworkQuota");
+  if (qwenQuota) qwenQuota.checked = settingsCache.qwenwork_quota_enabled === true;
   buildSettingsList();
   $("settingsMask").classList.add("open");
 }
 function closeSettings() { $("settingsMask").classList.remove("open"); }
 function collectSettings() {
-  const watch = [], limits = {}, plans = {};
+  const hidden = [];
   document.querySelectorAll("#settingsList .set-item").forEach((it) => {
     const t = it.dataset.tool;
-    if (it.querySelector(".sw-watch").checked) watch.push(t);
-    const lv = it.querySelector(".sw-limit").value.trim();
-    if (lv && Number(lv) > 0) limits[t] = Number(lv);
-    const pv = it.querySelector(".sw-plan").value.trim();
-    if (pv) plans[t] = pv;
+    if (!it.querySelector(".sw-visible").checked) hidden.push(t);
   });
-  settingsCache.watch = watch;
-  settingsCache.weekly_limits = limits;
-  settingsCache.plans = plans;
-  settingsCache.reset_day = Number(($("resetDay") || {}).value || 0);
+  settingsCache.hidden_tools = hidden;
+  settingsCache.refresh_seconds = Number(document.getElementById("refreshSeconds")?.value || 30);
+  settingsCache.qwenwork_quota_enabled = document.getElementById("qwenworkQuota")?.checked === true;
 }
 
 /* ---------------- 页脚 ---------------- */
 function renderFooter() {
-  const present = new Set(presentTools().filter((t) => tokensOf(getRange(usageCache[t], "all")) > 0));
-  const missing = Object.keys(TOOL_LABELS).filter((t) => !present.has(t));
+  const hidden = new Set(settingsCache.hidden_tools || []);
+  const present = new Set(presentTools().filter((t) => tokensOf(getRange(usageCache[t], "all")) > 0 || usageCache[t].detected));
+  const missing = Object.keys(TOOL_LABELS).filter((t) => !hidden.has(t) && !present.has(t));
   const el = $("undetected");
   if (el) {
     el.textContent = missing.length ? `另有 ${missing.length} 款工具未检测到本地数据` : "已检测所有支持的工具";
@@ -411,6 +389,7 @@ async function refresh() {
   const updated = $("updated");
   try {
     await Promise.all([loadUsage(), loadSettings()]);
+    scheduleRefresh();
     render();
     renderFooter();
     if (updated) {
@@ -449,7 +428,7 @@ function bind() {
     collectSettings();
     await saveSettings();
     closeSettings();
-    render();
+    await refresh();
   });
 }
 
@@ -459,4 +438,13 @@ bind();
 refresh();
 if (IS_TAURI) listen("request-refresh", refresh);
 window.addEventListener("resize", () => { if (usageCache) render(); });
-setInterval(refresh, 30000);
+let refreshTimer = null;
+let refreshIntervalSeconds = null;
+function scheduleRefresh() {
+  const seconds = settingsCache.refresh_seconds || 30;
+  if (refreshTimer && refreshIntervalSeconds === seconds) return;
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshIntervalSeconds = seconds;
+  refreshTimer = setInterval(refresh, seconds * 1000);
+}
+scheduleRefresh();

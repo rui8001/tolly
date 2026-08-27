@@ -2,7 +2,8 @@
 
 The Tauri tray app calls ``python -m engine --json``. The result is a flat dict
 keyed by tool name; each tool holds a ``ranges`` map (today/yesterday/week/
-last_week/month/year/all) of token buckets. Metadata keys begin with ``_``:
+last_week/month/year/all) of token buckets and may expose provider-authored
+``quota`` metadata. Metadata keys begin with ``_``:
 ``_pricing`` is the price table, ``_daily`` is the rolling chart series, and
 ``_projects`` is a privacy-preserving project summary.
 """

@@ -1,6 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{collections::BTreeMap, fs, path::PathBuf};
+use std::{fs, path::PathBuf};
 
 #[cfg(debug_assertions)]
 use std::process::Command;
@@ -10,17 +10,18 @@ use serde_json::Value;
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    App, AppHandle, Emitter, Manager, WindowEvent,
+    App, AppHandle, Emitter, Manager, PhysicalPosition, WebviewWindow, WindowEvent,
 };
 use tauri_plugin_positioner::{Position, WindowExt};
+
+const PANEL_WORK_AREA_MARGIN: f64 = 8.0;
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(default)]
 struct Settings {
-    watch: Vec<String>,
-    weekly_limits: BTreeMap<String, u64>,
-    reset_day: u8,
-    plans: BTreeMap<String, String>,
+    hidden_tools: Vec<String>,
+    refresh_seconds: u64,
+    qwenwork_quota_enabled: bool,
 }
 
 fn settings_path(app: &AppHandle) -> Result<PathBuf, String> {
@@ -31,14 +32,12 @@ fn settings_path(app: &AppHandle) -> Result<PathBuf, String> {
 }
 
 fn normalized_settings(mut settings: Settings) -> Settings {
-    settings.reset_day = settings.reset_day.min(6);
-    settings.weekly_limits.retain(|_, value| *value > 0);
-    settings.watch.sort();
-    settings.watch.dedup();
-    settings.plans.retain(|_, value| {
-        *value = value.trim().chars().take(80).collect();
-        !value.is_empty()
-    });
+    settings.hidden_tools.sort();
+    settings.hidden_tools.dedup();
+    settings.refresh_seconds = match settings.refresh_seconds {
+        15 | 30 | 60 | 120 => settings.refresh_seconds,
+        _ => 30,
+    };
     settings
 }
 
@@ -46,7 +45,7 @@ fn normalized_settings(mut settings: Settings) -> Settings {
 fn get_settings(app: AppHandle) -> Result<Settings, String> {
     let path = settings_path(&app)?;
     if !path.exists() {
-        return Ok(Settings::default());
+        return Ok(normalized_settings(Settings::default()));
     }
     let raw = fs::read_to_string(path).map_err(|error| format!("读取设置失败：{error}"))?;
     let settings = serde_json::from_str(&raw).map_err(|error| format!("设置格式无效：{error}"))?;
@@ -98,13 +97,18 @@ fn source_engine_root() -> PathBuf {
 }
 
 #[cfg(debug_assertions)]
-fn run_source_engine() -> Result<String, String> {
+fn run_source_engine(qwenwork_quota_enabled: bool) -> Result<String, String> {
     let (python, mut args) = python_command()?;
     args.extend(["-m", "engine", "--json", "--no-sync-snapshot"].map(String::from));
-    let output = Command::new(python)
+    let mut command = Command::new(python);
+    command
         .args(args)
         .current_dir(source_engine_root())
-        .env("PYTHONIOENCODING", "utf-8")
+        .env("PYTHONIOENCODING", "utf-8");
+    if qwenwork_quota_enabled {
+        command.env("TALLY_QWENWORK_QUOTA", "1");
+    }
+    let output = command
         .output()
         .map_err(|error| format!("启动用量引擎失败：{error}"))?;
     if !output.status.success() {
@@ -114,14 +118,21 @@ fn run_source_engine() -> Result<String, String> {
 }
 
 #[cfg(not(debug_assertions))]
-async fn run_bundled_engine(app: &AppHandle) -> Result<String, String> {
+async fn run_bundled_engine(
+    app: &AppHandle,
+    qwenwork_quota_enabled: bool,
+) -> Result<String, String> {
     use tauri_plugin_shell::ShellExt;
 
-    let output = app
+    let mut command = app
         .shell()
         .sidecar("tally-engine")
         .map_err(|error| format!("无法定位内置用量引擎：{error}"))?
-        .args(["--json", "--no-sync-snapshot"])
+        .args(["--json", "--no-sync-snapshot"]);
+    if qwenwork_quota_enabled {
+        command = command.env("TALLY_QWENWORK_QUOTA", "1");
+    }
+    let output = command
         .output()
         .await
         .map_err(|error| format!("启动内置用量引擎失败：{error}"))?;
@@ -133,13 +144,17 @@ async fn run_bundled_engine(app: &AppHandle) -> Result<String, String> {
 
 #[tauri::command]
 async fn get_usage(_app: AppHandle) -> Result<Value, String> {
+    let qwenwork_quota_enabled = get_settings(_app.clone())
+        .map(|settings| settings.qwenwork_quota_enabled)
+        .unwrap_or(false);
     #[cfg(debug_assertions)]
-    let raw = tauri::async_runtime::spawn_blocking(run_source_engine)
-        .await
-        .map_err(|error| format!("用量引擎任务失败：{error}"))??;
+    let raw =
+        tauri::async_runtime::spawn_blocking(move || run_source_engine(qwenwork_quota_enabled))
+            .await
+            .map_err(|error| format!("用量引擎任务失败：{error}"))??;
 
     #[cfg(not(debug_assertions))]
-    let raw = run_bundled_engine(&_app).await?;
+    let raw = run_bundled_engine(&_app, qwenwork_quota_enabled).await?;
 
     serde_json::from_str(&raw).map_err(|error| format!("用量引擎返回了无效 JSON：{error}"))
 }
@@ -149,11 +164,83 @@ fn quit_app(app: AppHandle) {
     app.exit(0);
 }
 
+fn clamp_axis(
+    position: i32,
+    window_size: u32,
+    work_start: i32,
+    work_size: u32,
+    margin: i32,
+) -> i32 {
+    let minimum = work_start.saturating_add(margin);
+    let maximum = work_start
+        .saturating_add(work_size as i32)
+        .saturating_sub(window_size as i32)
+        .saturating_sub(margin);
+
+    if maximum < minimum {
+        work_start
+    } else {
+        position.clamp(minimum, maximum)
+    }
+}
+
+fn constrain_panel_to_work_area(window: &WebviewWindow) -> tauri::Result<()> {
+    let Some(monitor) = window.current_monitor()? else {
+        return Ok(());
+    };
+    let work_area = monitor.work_area();
+    let window_size = window.outer_size()?;
+    let position = window.outer_position()?;
+    let margin = (PANEL_WORK_AREA_MARGIN * monitor.scale_factor()).round() as i32;
+
+    let x = clamp_axis(
+        position.x,
+        window_size.width,
+        work_area.position.x,
+        work_area.size.width,
+        margin,
+    );
+    let y = clamp_axis(
+        position.y,
+        window_size.height,
+        work_area.position.y,
+        work_area.size.height,
+        margin,
+    );
+
+    if x != position.x || y != position.y {
+        window.set_position(PhysicalPosition::new(x, y))?;
+    }
+    Ok(())
+}
+
 fn show_panel(app: &AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
-        let _ = window.move_window(Position::TrayLeft);
+        if window.move_window_constrained(Position::TrayLeft).is_ok() {
+            let _ = constrain_panel_to_work_area(&window);
+        }
         let _ = window.show();
         let _ = window.set_focus();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::clamp_axis;
+
+    #[test]
+    fn keeps_panel_inside_the_right_work_area_edge() {
+        assert_eq!(clamp_axis(1700, 420, 0, 1920, 8), 1492);
+    }
+
+    #[test]
+    fn supports_monitors_with_negative_coordinates() {
+        assert_eq!(clamp_axis(-2100, 420, -1920, 1920, 8), -1912);
+    }
+
+    #[test]
+    fn falls_back_to_work_area_start_when_panel_is_too_large() {
+        assert_eq!(clamp_axis(200, 1200, 0, 1000, 8), 0);
     }
 }
 

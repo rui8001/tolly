@@ -78,15 +78,23 @@
           <h3>设置</h3>
           <button class="icon-btn" id="settingsClose" title="关闭">&times;</button>
         </div>
-        <div class="modal-sub">你可以为任意工具设置自己的每周 Token 预算。卡片显示的是“预算剩余”，不是服务商账户的真实配额；所有设置只保存在本机。</div>
+        <div class="modal-sub">选择要显示的工具和刷新频率。余额与积分只从本机日志或服务商提供的本机接口自动读取，不支持手动填写。</div>
+        <div class="set-section-title">显示卡片</div>
+        <div class="set-list" id="settingsList"></div>
+        <div class="set-section-title">刷新</div>
         <div class="set-row">
-          <label class="set-label">每周重置日</label>
-          <select id="resetDay" class="set-input">
-            <option value="0">周一</option><option value="1">周二</option><option value="2">周三</option>
-            <option value="3">周四</option><option value="4">周五</option><option value="5">周六</option><option value="6">周日</option>
+          <label class="set-label" for="refreshSeconds">自动刷新</label>
+          <select id="refreshSeconds" class="set-input">
+            <option value="15">15 秒</option><option value="30">30 秒</option>
+            <option value="60">1 分钟</option><option value="120">2 分钟</option>
           </select>
         </div>
-        <div class="set-list" id="settingsList"></div>
+        <div class="set-section-title">额度查询</div>
+        <label class="set-toggle-row" for="qwenworkQuota">
+          <span><strong>千问办公剩余积分</strong><small>通过千问办公监听在 127.0.0.1 的只读接口查询；可能由千问客户端联网更新额度。</small></span>
+          <input type="checkbox" id="qwenworkQuota" />
+        </label>
+        <div class="set-privacy">所有数据都在本机统计。千问办公的 Token 为本地文本估算；豆包工作在没有可验证字段时只显示检测状态。</div>
         <div class="modal-foot">
           <button class="fbtn" id="settingsCancel">取消</button>
           <button class="fbtn primary" id="settingsSave">保存</button>
