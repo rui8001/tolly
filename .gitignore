@@ -30,6 +30,7 @@ _wrapped_extract*
 _patch*.py
 _render_test.cjs
 _dom*
+.qwen-agents-scan.db
 *.log
 /list_all.py
 /list_procs.py

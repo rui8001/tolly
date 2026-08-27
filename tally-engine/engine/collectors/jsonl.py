@@ -39,6 +39,7 @@ def _maybe_decompress_zstd(raw: bytes):
 class JsonlCollector(Collector):
     recursive: bool = True
     handle_zstd: bool = False  # when True, *.zstd files are decompressed
+    extra_fields: tuple[str, ...] = ()
 
     def candidate_dirs(self) -> list[str]:
         raise NotImplementedError
@@ -79,7 +80,7 @@ class JsonlCollector(Collector):
                     yield line
 
     def collect(self) -> dict:
-        ranges = empty_ranges()
+        ranges = empty_ranges(self.extra_fields)
         daily = {}
         projects = {}
         seen = set()
@@ -92,7 +93,7 @@ class JsonlCollector(Collector):
                 continue
             project = self.project_for(path)
             project_data = projects.setdefault(
-                project, {"ranges": empty_ranges(), "tools": set(), "last": None}
+                project, {"ranges": empty_ranges(self.extra_fields), "tools": set(), "last": None}
             )
             try:
                 for raw in lines:
@@ -117,6 +118,7 @@ class JsonlCollector(Collector):
                         cr=rec.get("cr", 0), cw=rec.get("cw", 0),
                         reason=rec.get("reason", 0), cost=rec.get("cost", 0),
                         model=rec.get("model"), session=rec.get("session"), daily=daily,
+                        extra={key: rec.get(key, 0) for key in self.extra_fields},
                     )
                     project_data["tools"].add(self.tool)
                     bucket_record(
@@ -125,6 +127,7 @@ class JsonlCollector(Collector):
                         cr=rec.get("cr", 0), cw=rec.get("cw", 0),
                         reason=rec.get("reason", 0), cost=rec.get("cost", 0),
                         model=rec.get("model"), session=rec.get("session"),
+                        extra={key: rec.get(key, 0) for key in self.extra_fields},
                     )
                     if dt is not None:
                         day = dt.date().isoformat()

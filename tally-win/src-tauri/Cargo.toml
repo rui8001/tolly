@@ -1,6 +1,6 @@
 [package]
 name = "tolly-windows"
-version = "1.0.0"
+version = "1.1.0"
 description = "Tolly — local-first AI coding usage tray app for Windows"
 authors = ["Tolly contributors"]
 edition = "2021"

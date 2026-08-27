@@ -33,6 +33,22 @@ def _workbuddy_number(obj, *keys):
     return None
 
 
+def _workbuddy_decimal(obj, *keys):
+    if not isinstance(obj, dict):
+        return None
+    for key in keys:
+        if key not in obj:
+            continue
+        value = obj.get(key)
+        if isinstance(value, bool):
+            continue
+        try:
+            return max(float(value), 0.0)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
 def _workbuddy_detail_total(value, *keys):
     if isinstance(value, dict):
         return _workbuddy_number(value, *keys) or 0
@@ -58,6 +74,7 @@ def _workbuddy_timestamp(value):
 class WorkBuddyCollector(JsonlCollector):
     tool = "workbuddy"
     recursive = True
+    extra_fields = ("credits_used",)
 
     def candidate_dirs(self):
         return discover_dirs("TALLY_WORKBUDDY_DIR",
@@ -76,6 +93,12 @@ class WorkBuddyCollector(JsonlCollector):
         raw = provider.get("rawUsage") or {}
         sources = [x for x in (message_usage, normalized, raw)
                    if isinstance(x, dict) and x]
+        credit_candidates = [
+            _workbuddy_decimal(source, "credit", "credits", "credits_used", "creditsUsed")
+            for source in sources
+        ]
+        credits_used = max((value for value in credit_candidates if value is not None),
+                           default=0.0)
 
         selected = None
         input_total = output = 0
@@ -89,8 +112,11 @@ class WorkBuddyCollector(JsonlCollector):
                 input_total = inp or 0
                 output = out or 0
                 break
-        if selected is None:
+        if selected is None and credits_used <= 0:
             return None
+
+        if selected is None:
+            selected = {}
 
         cache_read_candidates = []
         cache_write_candidates = []
@@ -152,6 +178,7 @@ class WorkBuddyCollector(JsonlCollector):
             "dt": dt, "in": input_tokens, "out": output,
             "cr": cache_read, "cw": cache_write,
             "cost": cost, "model": str(model), "session": path,
+            "credits_used": credits_used,
             "_dedupe": (str(session_id), str(item_id)) if item_id else None,
         }
 

@@ -34,6 +34,7 @@ class WorkBuddyCollectorTests(unittest.TestCase):
                         "cache_creation_input_tokens": 100,
                     },
                 },
+                "providerData": {"rawUsage": {"credit": 1.25}},
             }
             session = project / "session.jsonl"
             session.write_text(
@@ -48,6 +49,8 @@ class WorkBuddyCollectorTests(unittest.TestCase):
             self.assertEqual(200, all_usage["cr"])
             self.assertEqual(100, all_usage["cw"])
             self.assertEqual(1, len(all_usage["sessions"]))
+            self.assertEqual(1.25, all_usage["credits_used"])
+            self.assertEqual(1.25, result["ranges"]["today"]["credits_used"])
 
             project_usage = result["projects"]["demo-project"]["ranges"]["all"]
             self.assertEqual(1500, project_usage["in"] + project_usage["out"]

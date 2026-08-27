@@ -1,6 +1,6 @@
 [project]
 name = "tally-usage-engine"
-version = "1.0.0"
+version = "1.1.0"
 description = "Local, cross-platform AI coding usage aggregation engine"
 requires-python = ">=3.10"
 license = "MIT"

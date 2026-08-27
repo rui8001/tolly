@@ -45,8 +45,14 @@ def empty_ranges(extra_keys=None):
     return {k: empty_bucket(extra_keys) for k in RANGE_KEYS}
 
 
+def _add_extra_usage(target, extra):
+    for key, value in (extra or {}).items():
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            target[key] = target.get(key, 0) + value
+
+
 def daily_record(daily, dt, *, inp=0, out=0, cr=0, cw=0,
-                 reason=0, cost=0.0, model=None):
+                 reason=0, cost=0.0, model=None, extra=None):
     """Accumulate one record into a calendar-day bucket."""
     if dt is None:
         return
@@ -57,10 +63,12 @@ def daily_record(daily, dt, *, inp=0, out=0, cr=0, cw=0,
          "cost": 0.0, "models": {}},
     )
     add_token_usage(bucket, inp, out, cr, cw, reason, cost, model)
+    _add_extra_usage(bucket, extra)
 
 
 def bucket_record(ranges, bounds, dt, *, inp=0, out=0, cr=0, cw=0,
-                  reason=0, cost=0.0, model=None, session=None, daily=None):
+                  reason=0, cost=0.0, model=None, session=None, daily=None,
+                  extra=None):
     """Add one usage record into every range bucket it classifies into.
 
     ``bounds`` should be computed once per collector via ``range_bounds()``.
@@ -72,9 +80,10 @@ def bucket_record(ranges, bounds, dt, *, inp=0, out=0, cr=0, cw=0,
         if session is not None:
             bucket["sessions"].add(session)
         add_token_usage(bucket, inp, out, cr, cw, reason, cost, model)
+        _add_extra_usage(bucket, extra)
     if daily is not None:
         daily_record(daily, dt, inp=inp, out=out, cr=cr, cw=cw,
-                     reason=reason, cost=cost, model=model)
+                     reason=reason, cost=cost, model=model, extra=extra)
 
 
 def merge_token_day(bucket, day, session=None):
