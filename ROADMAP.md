@@ -12,11 +12,11 @@ Tolly is maintained as a local-first Windows utility for transparent AI coding u
 | --- | --- | --- |
 | Installable public release | NSIS, MSI, and SHA-256 assets in [v1.2.0](https://github.com/rui8001/tolly/releases/tag/v1.2.0) | Complete |
 | Repeatable source checks | Python, JavaScript, Vite, Rust, version, and privacy checks in CI | Complete |
-| English discovery path | `README.en.md` and repository metadata | In progress |
-| Clean-runner package smoke test | Verify checksum, MSI install, bundled sidecar, launch, and uninstall on GitHub's Windows runner | In progress |
-| Upstream provenance | Fixed upstream commit, file hash, attribution, and implementation boundary | In progress |
-| Real-user trial | Privacy-safe guide, Issue form, and zero-based ledger | Ready for volunteers; no results counted yet |
-| Application evidence | Public evidence table and current draft answers | In progress |
+| English discovery path | `README.en.md` and bilingual navigation | Complete |
+| Clean-runner package smoke test | [Run #2](https://github.com/rui8001/tolly/actions/runs/33603303994): checksum, MSI install, bundled sidecar, launch without Python, and uninstall | Complete |
+| Upstream provenance | Fixed upstream commit, file hash, attribution, and implementation boundary | Complete |
+| Real-user trial | Privacy-safe guide, Issue form, zero-based ledger, and [public invitation #9](https://github.com/rui8001/tolly/issues/9) | Recruiting; no results counted yet |
+| Application evidence | Public evidence table and current draft answers | Complete; private fields remain |
 
 ## Next release gate
 

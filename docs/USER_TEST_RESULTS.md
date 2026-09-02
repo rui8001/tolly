@@ -8,7 +8,7 @@ This ledger starts at zero and records only genuine, voluntary trials. It must n
 
 | Measure | Count |
 | --- | ---: |
-| Public invitations posted | 0 |
+| Public invitations posted | 1 |
 | Volunteers accepted | 0 |
 | Tests started | 0 |
 | Tests completed | 0 |
@@ -16,7 +16,7 @@ This ledger starts at zero and records only genuine, voluntary trials. It must n
 | Public usability Issues | 0 |
 | Confirmed product blockers | 0 |
 
-No real-user trial has been recorded yet. Repository downloads, maintainer machines, GitHub Actions runners, and automated tests are not users.
+One public invitation has been posted in [Issue #9](https://github.com/rui8001/tolly/issues/9). No real-user trial has been recorded yet. Repository downloads, maintainer machines, GitHub Actions runners, and automated tests are not users.
 
 ## Anonymous ledger
 

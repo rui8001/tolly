@@ -99,6 +99,7 @@ pnpm build
 Tolly 目前处于早期公开维护阶段，正在招募 Windows 10/11 x64 用户进行 15–20 分钟的自愿试用。试用不要求 Star、公开身份或上传真实日志；即使没有检测到任何支持的工具，也可以报告安装和界面体验。
 
 - 按[真实用户试用说明](docs/USER_TESTING.md)操作。
+- 在[公开试用招募 Issue #9](https://github.com/rui8001/tolly/issues/9)中查看本轮目标或直接留言。
 - 通过[隐私安全的试用反馈表](https://github.com/rui8001/tolly/issues/new?template=usability_report.yml)提交结果。
 - 查看[从零开始的公开结果台账](docs/USER_TEST_RESULTS.md)。
 
