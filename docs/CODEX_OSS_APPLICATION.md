@@ -12,9 +12,9 @@ Official program page: <https://developers.openai.com/community/codex-for-oss>
 | Core maintainer | Repository owner with write access and release history | Ready |
 | Ecosystem role | Local-first Windows usage transparency across 20 AI coding tools | Ready to explain |
 | Working product | Versioned NSIS/MSI installers and checksums | Ready |
-| Reproducibility | Source tests, CI, release workflow, and Windows smoke test | Smoke test in progress |
+| Reproducibility | Source tests, CI, release workflow, and successful [Windows smoke run](https://github.com/rui8001/tolly/actions/runs/33603303994) | Ready |
 | Privacy and security need | Reads local developer-tool data with documented boundaries and no analytics | Ready |
-| Meaningful external use | Real volunteers, public Issues, and consent-safe summaries | Not yet demonstrated |
+| Meaningful external use | [Public trial invitation #9](https://github.com/rui8001/tolly/issues/9); verified external-user count remains zero | Not yet demonstrated |
 | Maintenance history | Three releases, pull requests, changelog, dependency automation, and active fixes | Active but recent |
 | API-credit use | PR review, synthetic regression evaluation, issue triage, and release verification | Draft plan ready |
 
@@ -23,6 +23,7 @@ Official program page: <https://developers.openai.com/community/codex-for-oss>
 - Tolly is an early-stage project; do not describe it as widely used.
 - Stars, forks, downloads, and user counts must be refreshed immediately before submission.
 - Real-user results are recorded in [USER_TEST_RESULTS.md](USER_TEST_RESULTS.md) and currently start at zero.
+- A privacy-safe public trial invitation is open in [Issue #9](https://github.com/rui8001/tolly/issues/9); it is an invitation, not evidence of adoption.
 - The latest release is [v1.2.0](https://github.com/rui8001/tolly/releases/tag/v1.2.0).
 - Upstream reference boundaries are documented in [UPSTREAM_PROVENANCE.md](UPSTREAM_PROVENANCE.md).
 
