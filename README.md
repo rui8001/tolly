@@ -6,6 +6,8 @@
 
 Tolly 是一个本地优先的 Windows 系统托盘应用，用来汇总 AI 编程工具写入本机的 Token、积分和可验证调用用量，并按公开 API 价格估算成本。数据默认留在本机，不需要把对话记录上传到统计服务。
 
+[English README](README.en.md)
+
 项目受到 macOS 开源项目 [Tokei](https://github.com/cclank/tokei) 的产品方向启发。部分本地日志采集规则和价格映射依据其 MIT 实现重构；Windows 外壳、界面资源和交互实现使用独立名称并重新设计。Tolly 不是 Tokei 的官方 Windows 版本，也不代表任何模型或工具服务商。
 
 ![Tolly 1.2.0 用量总览](docs/assets/v1.2.0/overview.png)
@@ -92,6 +94,16 @@ pnpm build
 
 成功后可在 `tally-win/src-tauri/target/release/bundle/nsis/` 和 `bundle/msi/` 找到安装包。安装包内置冻结后的数据引擎，最终用户不需要安装 Python。带 `v*` 的 Git 标签会触发 GitHub Actions 构建并上传版本化安装包，可用于手动覆盖升级；签名自动更新器将在仓库地址、签名公钥和回滚策略确定后再启用。
 
+## 参与真实试用
+
+Tolly 目前处于早期公开维护阶段，正在招募 Windows 10/11 x64 用户进行 15–20 分钟的自愿试用。试用不要求 Star、公开身份或上传真实日志；即使没有检测到任何支持的工具，也可以报告安装和界面体验。
+
+- 按[真实用户试用说明](docs/USER_TESTING.md)操作。
+- 通过[隐私安全的试用反馈表](https://github.com/rui8001/tolly/issues/new?template=usability_report.yml)提交结果。
+- 查看[从零开始的公开结果台账](docs/USER_TEST_RESULTS.md)。
+
+不要在 Issue 中上传原始日志、提示词、用户名、项目路径、账户标识或 API Key。维护者自测、自动检查和下载次数不会被冒充为真实用户反馈。
+
 ## 隐私
 
 默认采集、聚合和设置保存均在本机完成。只有显式运行 `python -m engine update-prices`、主动开启 Grok 实时配额，或在设置中开启千问办公剩余积分查询时，相关客户端才可能发起网络请求。详情见 [隐私说明](docs/PRIVACY.md)。
@@ -101,5 +113,7 @@ pnpm build
 ## 开源与归属
 
 本项目代码采用 [MIT License](LICENSE)。第三方组件、上游参考关系和归属说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。维护者发布版本前应完成 [发布检查清单](docs/RELEASE_CHECKLIST.md)。
+
+上游参考范围、固定提交、文件哈希和独立实现边界记录在[来源与许可台账](docs/UPSTREAM_PROVENANCE.md)中。
 
 版本变化记录见 [CHANGELOG.md](CHANGELOG.md)，维护者发布流程见 [docs/RELEASING.md](docs/RELEASING.md)。欢迎通过 [CONTRIBUTING.md](CONTRIBUTING.md) 参与，安全与隐私问题请按 [SECURITY.md](SECURITY.md) 私下报告。

@@ -4,6 +4,13 @@
 
 ## [Unreleased]
 
+### Added
+
+- English project overview and a privacy-safe real-user testing guide, Issue form, and zero-based public results ledger.
+- Codex for Open Source evidence ledger and a time-boxed public application-readiness roadmap.
+- Reviewable upstream provenance record with the fixed Tokei revision and identical pricing-data hash.
+- Windows release-install smoke workflow that downloads the tagged MSI, verifies its checksum, checks the bundled sidecar, launches with Python removed from `PATH`, and uninstalls on a clean runner.
+
 ## [1.2.0] - 2026-09-02
 
 ### Added

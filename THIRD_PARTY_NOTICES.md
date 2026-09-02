@@ -10,6 +10,8 @@ The upstream README at commit `cd942dfb6a8aa409f92adde020ebdf4d9514ba9b` declare
 
 Upstream source: <https://github.com/cclank/tokei>
 
+The reviewed commit, identical pricing-data hash, independently maintained components, and conservative future-import rule are recorded in [`docs/UPSTREAM_PROVENANCE.md`](docs/UPSTREAM_PROVENANCE.md). This record exists because the reviewed upstream revision identified itself as MIT in its README but did not include a separate root license file or a more specific copyright notice.
+
 ## Pricing data
 
 `tally-engine/pricing.json` contains model identifiers and public API pricing used only for estimates. Prices can change and may not match subscriptions, discounts, taxes, or invoices. Model and provider names remain trademarks of their respective owners; their presence does not imply endorsement.
