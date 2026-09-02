@@ -57,6 +57,10 @@ class JsonlCollector(Collector):
             name = os.path.basename(os.path.dirname(parent)) or name
         return name
 
+    def project_for_record(self, obj: dict, path: str, record: dict) -> str:
+        """Prefer a collector-verified working directory over log layout."""
+        return str(record.get("project") or self.project_for(path))
+
     def record_identity(self, obj: dict, record: dict):
         """Optional replay identity. Subclasses can return a hashable value."""
         return record.get("_dedupe")
@@ -91,10 +95,6 @@ class JsonlCollector(Collector):
             except Exception as e:
                 warn(f"{self.tool}: cannot read {path}: {e}")
                 continue
-            project = self.project_for(path)
-            project_data = projects.setdefault(
-                project, {"ranges": empty_ranges(self.extra_fields), "tools": set(), "last": None}
-            )
             try:
                 for raw in lines:
                     try:
@@ -112,6 +112,11 @@ class JsonlCollector(Collector):
                             continue
                         seen.add(identity)
                     dt = rec.get("dt")
+                    project = self.project_for_record(obj, path, rec)
+                    project_data = projects.setdefault(
+                        project,
+                        {"ranges": empty_ranges(self.extra_fields), "tools": set(), "last": None},
+                    )
                     bucket_record(
                         ranges, bounds, dt,
                         inp=rec.get("in", 0), out=rec.get("out", 0),

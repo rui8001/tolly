@@ -4,6 +4,22 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-02
+
+### Added
+
+- 豆包工作从本地 SDK 日志统计可验证的对话调用次数，并明确区分调用、Token 与积分口径。
+
+### Changed
+
+- 余额进度条改为四档渐变：充足时沿用工具主色，低于 50%、30%、10% 后依次变为黄、橙、红。
+- 项目页跟随当前所选周期，只显示该周期有用量的项目，并按真实工作目录合并 Codex、千问办公和 WorkBuddy 记录。
+
+### Fixed
+
+- 修复 Codex 日期目录被误识别成项目，以及项目页固定展示全部历史数据的问题。
+- 修复零成本项目的用量占比条无法显示的问题。
+
 ## [1.1.0] - 2026-08-28
 
 ### Added
@@ -41,6 +57,7 @@
 - 项目名称在进入界面前会移除用户名、主目录片段和长标识符。
 - 默认只读取本地数据；网络行为和数据边界记录在隐私说明中。
 
-[Unreleased]: https://github.com/rui8001/tolly/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/rui8001/tolly/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/rui8001/tolly/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/rui8001/tolly/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/rui8001/tolly/releases/tag/v1.0.0

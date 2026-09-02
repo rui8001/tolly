@@ -178,6 +178,7 @@ class WorkBuddyCollector(JsonlCollector):
             "dt": dt, "in": input_tokens, "out": output,
             "cr": cache_read, "cw": cache_write,
             "cost": cost, "model": str(model), "session": path,
+            "project": obj.get("cwd") or message.get("cwd"),
             "credits_used": credits_used,
             "_dedupe": (str(session_id), str(item_id)) if item_id else None,
         }

@@ -49,6 +49,48 @@ class CodexCollectorTests(unittest.TestCase):
         self.assertEqual(800, record["cr"])
         self.assertEqual(100, record["out"])
 
+    def test_project_comes_from_session_working_directory_not_date_folder(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            dated = root / "2026" / "09" / "02"
+            dated.mkdir(parents=True)
+            now = datetime.now(timezone.utc).isoformat()
+            records = [
+                {
+                    "timestamp": now,
+                    "type": "session_meta",
+                    "payload": {"cwd": "D:\\GitHub项目\\tolly", "model": "gpt-5.5"},
+                },
+                {
+                    "timestamp": now,
+                    "type": "event_msg",
+                    "payload": {
+                        "type": "token_count",
+                        "info": {
+                            "last_token_usage": {
+                                "input_tokens": 10,
+                                "cached_input_tokens": 0,
+                                "output_tokens": 5,
+                            },
+                            "total_token_usage": {
+                                "input_tokens": 10,
+                                "cached_input_tokens": 0,
+                                "output_tokens": 5,
+                                "reasoning_output_tokens": 0,
+                            },
+                        },
+                    },
+                },
+            ]
+            (dated / "rollout.jsonl").write_text(
+                "\n".join(json.dumps(item) for item in records), encoding="utf-8"
+            )
+
+            result = FixtureCodexCollector(root).collect()
+
+            self.assertIn("D:\\GitHub项目\\tolly", result["projects"])
+            self.assertNotIn("02", result["projects"])
+
     def test_latest_weekly_quota_is_exposed_without_inventing_credits(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

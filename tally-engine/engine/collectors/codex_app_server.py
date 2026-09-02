@@ -115,7 +115,7 @@ def _query_app_server(executable: str, timeout: float) -> dict | None:
             "id": 1,
             "method": "initialize",
             "params": {
-                "clientInfo": {"name": "tolly", "version": "1.1.0"},
+                "clientInfo": {"name": "tolly", "version": "1.2.0"},
                 "capabilities": {"experimentalApi": True},
             },
         })

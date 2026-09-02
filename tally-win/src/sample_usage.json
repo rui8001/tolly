@@ -1,14 +1,28 @@
 {
-  "demo": {
-    "quota": {"source": "local_log", "weekly": {"used_percent": 36, "remaining_percent": 64, "window_minutes": 10080, "resets_at": 1800000000}},
+  "codex": {
+    "quota": {"source": "local_log", "weekly": {"used_percent": 54, "remaining_percent": 46, "window_minutes": 10080, "resets_at": 1800000000}},
     "ranges": {
-      "today": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"demo/model-small": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]},
+      "today": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"gpt-5.5": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]},
       "yesterday": {"in": 0, "out": 0, "cr": 0, "cw": 0, "reason": 0, "cost": 0, "models": {}, "sessions": []},
-      "week": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"demo/model-small": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]},
+      "week": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"gpt-5.5": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]},
       "last_week": {"in": 0, "out": 0, "cr": 0, "cw": 0, "reason": 0, "cost": 0, "models": {}, "sessions": []},
-      "month": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"demo/model-small": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]},
-      "year": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"demo/model-small": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]},
-      "all": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"demo/model-small": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]}
+      "month": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"gpt-5.5": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]},
+      "year": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"gpt-5.5": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]},
+      "all": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {"gpt-5.5": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84}}, "sessions": ["demo-session"]}
+    }
+  },
+  "doubaowork": {
+    "detected": true,
+    "metric": "calls",
+    "note": "按本地对话请求统计调用次数，不等同于 Token 或积分",
+    "ranges": {
+      "today": {"in": 0, "out": 0, "cr": 0, "cw": 0, "reason": 0, "cost": 0, "calls": 3, "models": {}, "sessions": []},
+      "yesterday": {"in": 0, "out": 0, "cr": 0, "cw": 0, "reason": 0, "cost": 0, "calls": 8, "models": {}, "sessions": []},
+      "week": {"in": 0, "out": 0, "cr": 0, "cw": 0, "reason": 0, "cost": 0, "calls": 66, "models": {}, "sessions": []},
+      "last_week": {"in": 0, "out": 0, "cr": 0, "cw": 0, "reason": 0, "cost": 0, "calls": 20, "models": {}, "sessions": []},
+      "month": {"in": 0, "out": 0, "cr": 0, "cw": 0, "reason": 0, "cost": 0, "calls": 86, "models": {}, "sessions": []},
+      "year": {"in": 0, "out": 0, "cr": 0, "cw": 0, "reason": 0, "cost": 0, "calls": 86, "models": {}, "sessions": []},
+      "all": {"in": 0, "out": 0, "cr": 0, "cw": 0, "reason": 0, "cost": 0, "calls": 86, "models": {}, "sessions": []}
     }
   },
   "_daily": {
@@ -17,7 +31,11 @@
     "2026-08-26": {"in": 4800, "out": 2700, "cr": 9700, "cw": 600, "reason": 500, "cost": 0.38, "models": {}}
   },
   "_projects": {
-    "demo project": {"tools": ["demo"], "last": "2026-08-26", "ranges": {"all": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {}, "sessions": ["demo-session"]}}}
+    "示例项目/tolly": {"tools": ["codex"], "last": "2026-09-02", "ranges": {
+      "today": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {}, "sessions": ["demo-session"]},
+      "week": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {}, "sessions": ["demo-session"]},
+      "all": {"in": 12400, "out": 5800, "cr": 21600, "cw": 900, "reason": 1200, "cost": 0.84, "models": {}, "sessions": ["demo-session"]}
+    }}
   },
   "_pricing": {"models": {}, "aliases": {}}
 }
