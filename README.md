@@ -2,20 +2,42 @@
 
 [![CI](https://github.com/rui8001/tolly/actions/workflows/ci.yml/badge.svg)](https://github.com/rui8001/tolly/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/rui8001/tolly)](https://github.com/rui8001/tolly/releases/latest)
 
-Tolly 是一个本地优先的 Windows 系统托盘应用，用来汇总 AI 编程工具写入本机的 Token 用量，并按公开 API 价格估算成本。
+Tolly 是一个本地优先的 Windows 系统托盘应用，用来汇总 AI 编程工具写入本机的 Token、积分和可验证调用用量，并按公开 API 价格估算成本。数据默认留在本机，不需要把对话记录上传到统计服务。
 
 项目受到 macOS 开源项目 [Tokei](https://github.com/cclank/tokei) 的产品方向启发。部分本地日志采集规则和价格映射依据其 MIT 实现重构；Windows 外壳、界面资源和交互实现使用独立名称并重新设计。Tolly 不是 Tokei 的官方 Windows 版本，也不代表任何模型或工具服务商。
+
+![Tolly 1.2.0 用量总览](docs/assets/v1.2.0/overview.png)
+
+## 下载与安装
+
+前往 [Releases](https://github.com/rui8001/tolly/releases/latest) 下载最新版本：
+
+- `Tolly_1.2.0_x64-setup.exe`：推荐普通 Windows 用户使用，可直接覆盖旧版本升级。
+- `Tolly_1.2.0_x64_en-US.msi`：适合需要 MSI 部署的环境。
+- `SHA256SUMS.txt`：用于核对安装包完整性。
+
+当前安装包尚未购买 Windows 代码签名证书，因此系统可能显示“未知发布者”。这不代表文件被篡改；请从本仓库 Release 下载，并用同一版本附带的 SHA-256 文件核验。
+
+## 1.2.0 亮点
+
+- 余额进度条按剩余比例使用四档渐变：工具主色、黄色、橙色和红色，风险状态更直观。
+- 豆包工作可从本地 SDK 日志统计真实对话调用次数；不把调用次数伪装成 Token 或积分。
+- 项目页读取日志中的真实工作目录，不再把 Codex 的日期目录误认为项目。
+- 项目页支持今日、本周、本月等周期切换，并自动隐藏当前周期没有用量的项目。
+
+![Tolly 1.2.0 项目用量](docs/assets/v1.2.0/projects.png)
 
 ## 当前能力
 
 - 覆盖 20 个 AI 编程工具的 JSONL / SQLite 本地数据源；无法验证用量字段时只报告检测状态。
 - 今日、昨日、本周、上周、本月、本年与全部用量。
-- 按模型、项目、每日趋势与年度回顾聚合。
+- 按模型、项目、每日趋势与年度回顾聚合；项目视图跟随当前统计周期。
 - Windows 托盘弹窗：单实例、失焦隐藏、托盘定位、手动/定时刷新。
 - 优先显示服务商通过本地日志或本机只读接口提供的周余额或剩余积分；不允许手工填写或用 Token 消耗反推余额。
 - Codex 显示与其设置页一致的账户“通用使用限额”，并忽略 Spark 等模型专属限额。
-- WorkBuddy 显示日志记录的今日积分消耗；千问办公提供明确标注的本地 Token 估算和可选官方本机额度查询；豆包工作暂只做可靠性检测。
+- WorkBuddy 显示日志记录的今日积分消耗；千问办公提供明确标注的本地 Token 估算和可选官方本机额度查询；豆包工作显示本地日志中可验证的对话调用次数。
 - 发布包使用 PyInstaller sidecar，最终用户不需要安装 Python。
 
 成本只是按价格表计算的估值，不是账单。余额仅来自服务商明确提供的额度字段，不通过 Token 用量反推。

@@ -32,8 +32,8 @@ cargo check --manifest-path src-tauri/Cargo.toml
 先把发布提交合并到 `main`，并确认该提交的 CI 全部通过。然后从同一提交创建并推送标签：
 
 ```powershell
-git tag -a v1.1.0 -m "Tolly v1.1.0"
-git push origin v1.1.0
+git tag -a v1.2.0 -m "Tolly v1.2.0"
+git push origin v1.2.0
 ```
 
 工作流会拒绝与源码版本号不一致的标签。成功后，检查 Release 中是否只有 NSIS、MSI 和 SHA-256 校验和文件，并在一台未安装 Python 的干净 Windows 10/11 环境复验下载产物。

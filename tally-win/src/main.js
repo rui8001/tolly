@@ -1,8 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import previewUsage from "./sample_usage.json";
-import { displayProject } from "./project-name.js";
+import { projectEntries } from "./project-data.js";
 import { selectQuota } from "./quota.js";
+import { quotaGradient } from "./quota-style.js";
 
 window.__TOLLY_BOOT_STATE__ = "module";
 const IS_TAURI = Boolean(window.__TAURI_INTERNALS__);
@@ -143,9 +144,9 @@ function quotaHtml(tool, color) {
   } : null);
   if (!quota) return "";
   const pct = Number.isFinite(quota.remainingPercent) ? quota.remainingPercent : null;
-  const barColor = pct === null || pct >= 50 ? color : pct >= 20 ? "#f2b705" : "#ef6f6f";
   const reset = quota.resetText ? `<span class="cq-reset">重置 ${escapeHtml(quota.resetText)}</span>` : "";
-  const bar = pct === null ? "" : `<div class="cq-bar"><i style="width:${pct.toFixed(1)}%;background:${barColor}"></i></div>`;
+  const gradient = pct === null ? "" : quotaGradient(pct, color);
+  const bar = pct === null ? "" : `<div class="cq-bar"><i style="width:${pct.toFixed(1)}%;background:${gradient}"></i></div>`;
   return `<div class="cquota"><div class="cq-top"><span>${escapeHtml(quota.label)}</span><strong>${escapeHtml(quota.valueText)}</strong></div>${reset}${bar}</div>`;
 }
 function modelRows(models, color) {
@@ -161,40 +162,49 @@ function renderCard(tool) {
   const data = usageCache[tool] || {};
   const r = getRange(data, currentPeriod);
   const total = tokensOf(r);
+  const calls = Number(r.calls || 0);
   const sessions = Array.isArray(r.sessions) ? r.sessions.length : (r.sessions || 0);
   const color = colorFor(tool);
   const hit = (r.in || 0) + (r.cr || 0) > 0 ? (r.cr || 0) / ((r.in || 0) + (r.cr || 0)) * 100 : null;
 
   const stats = [];
-  stats.push(statItem("$", "cost", "≈成本", fmtCost(r.cost)));
-  if (hit !== null) stats.push(`<div class="chit">${hitDonut(hit, color)}<div><div class="sl">命中</div><div class="sv">${fmtPercent(hit)}</div></div></div>`);
-  stats.push(statItem("↓", "input", "输入", human(r.in)));
-  if ((r.cr || 0) > 0) stats.push(statItem("↯", "cache", "缓存读", human(r.cr)));
-  stats.push(statItem("↑", "output", "输出", human(r.out)));
-  if ((r.cw || 0) > 0) stats.push(statItem("⇣", "cache-write", "缓存写", human(r.cw)));
-  if ((r.reason || 0) > 0) stats.push(statItem("✦", "reason", "推理", human(r.reason)));
+  if (total > 0) {
+    stats.push(statItem("$", "cost", "≈成本", fmtCost(r.cost)));
+    if (hit !== null) stats.push(`<div class="chit">${hitDonut(hit, color)}<div><div class="sl">命中</div><div class="sv">${fmtPercent(hit)}</div></div></div>`);
+    stats.push(statItem("↓", "input", "输入", human(r.in)));
+    if ((r.cr || 0) > 0) stats.push(statItem("↯", "cache", "缓存读", human(r.cr)));
+    stats.push(statItem("↑", "output", "输出", human(r.out)));
+    if ((r.cw || 0) > 0) stats.push(statItem("⇣", "cache-write", "缓存写", human(r.cw)));
+    if ((r.reason || 0) > 0) stats.push(statItem("✦", "reason", "推理", human(r.reason)));
+  } else if (calls > 0) {
+    stats.push(statItem("↗", "input", "本地调用", human(calls)));
+  }
 
   const models = r.models || {};
   const mcount = Object.keys(models).length;
 
   const balanceHtml = quotaHtml(tool, color);
   const estimated = data.estimated === true;
-  const totalLabel = estimated ? `${periodLabel(currentPeriod)} 估算总量` : `${periodLabel(currentPeriod)} 总量`;
-  const statusOnly = total === 0 && data.detected === true;
+  const shownTotal = total > 0 ? total : calls;
+  const totalLabel = calls > 0 && total === 0
+    ? `${periodLabel(currentPeriod)} 调用次数`
+    : estimated ? `${periodLabel(currentPeriod)} 估算总量` : `${periodLabel(currentPeriod)} 总量`;
+  const statusOnly = total === 0 && calls === 0 && data.detected === true;
   const statusHtml = statusOnly ? `<div class="detected-note">${escapeHtml(data.note || "已检测到本地数据")}</div>` : "";
+  const usageNote = calls > 0 && data.note ? `<div class="usage-note">${escapeHtml(data.note)}</div>` : "";
+  const modelDetail = total > 0 ? `<button class="cmodels" data-tool="${tool}">● 按模型 (${mcount}) <span class="chev">›</span></button>
+    <div class="cmodel-list" id="ml-${tool}">${modelRows(models, color)}</div>` : "";
 
   return `<div class="card" style="--tool-color:${color};--tool-tint:${color}22">
     <div class="card-head"><span class="cdot" style="background:${color}"></span>
       <span class="cname">${TOOL_LABELS[tool] || tool}</span>
       ${sessions ? `<span class="csess">${sessions}</span>` : ""}</div>
     <div class="coverview${balanceHtml ? " has-quota" : ""}">
-      <div class="ctotal"><div class="cbig">${human(total)}</div>
+      <div class="ctotal"><div class="cbig">${human(shownTotal)}</div>
         <div class="cbig-sub">${totalLabel}</div></div>
       ${balanceHtml}
     </div>
-    ${statusHtml || `<div class="cstats">${stats.join("")}</div>
-    <button class="cmodels" data-tool="${tool}">● 按模型 (${mcount}) <span class="chev">›</span></button>
-    <div class="cmodel-list" id="ml-${tool}">${modelRows(models, color)}</div>`}
+    ${statusHtml || `<div class="cstats">${stats.join("")}</div>${usageNote}${modelDetail}`}
   </div>`;
 }
 function renderUsage() {
@@ -202,9 +212,10 @@ function renderUsage() {
   const tools = presentTools()
     .filter((t) => !hidden.has(t))
     .map((t) => ({ t, total: tokensOf(getRange(usageCache[t], currentPeriod)), cost: getRange(usageCache[t], currentPeriod).cost || 0,
+      calls: Number(getRange(usageCache[t], currentPeriod).calls || 0),
       credits: Number(getRange(usageCache[t], "today").credits_used || 0), detected: usageCache[t].detected === true }))
-    .filter((x) => x.total > 0 || x.cost > 0 || x.credits > 0)
-    .sort((a, b) => b.cost - a.cost || b.total - a.total);
+    .filter((x) => x.total > 0 || x.cost > 0 || x.calls > 0 || x.credits > 0)
+    .sort((a, b) => b.cost - a.cost || b.total - a.total || b.calls - a.calls);
   if (!tools.length) return '<div class="empty">该周期暂无用量数据</div>';
   return `<div class="cards">${tools.map((x) => renderCard(x.t)).join("")}</div>`;
 }
@@ -212,23 +223,20 @@ function renderUsage() {
 /* ---------------- 项目 / 回顾 ---------------- */
 function renderProjects() {
   const projs = (usageCache && usageCache._projects) || {};
-  const entries = Object.keys(projs).map((name) => {
-    const p = projs[name], r = (p.ranges && p.ranges.all) || {};
-    return { name: displayProject(name), tokens: tokensOf(r), cost: r.cost || 0, tools: p.tools || [], last: p.last || "—",
-      sessions: Array.isArray(r.sessions) ? r.sessions.length : 0 };
-  }).sort((a, b) => b.cost - a.cost);
+  const entries = projectEntries(projs, currentPeriod);
   if (!entries.length) return '<div class="empty">暂无项目用量数据</div>';
-  const maxCost = Math.max(0.0001, ...entries.map((e) => e.cost));
+  const activity = (entry) => entry.tokens || entry.calls || entry.credits || entry.cost;
+  const maxActivity = Math.max(0.0001, ...entries.map(activity));
   const cards = entries.map((e) => {
-    const w = (e.cost / maxCost * 100).toFixed(1);
+    const w = (activity(e) / maxActivity * 100).toFixed(1);
     const tags = (e.tools || []).slice(0, 4).map((t) => `<span class="tag">${TOOL_LABELS[t] || t}</span>`).join("") || '<span class="tag">—</span>';
     return `<div class="proj-card">
-      <div class="proj-top"><span class="proj-name">${escapeHtml(e.name)}</span><span class="proj-cost">${fmtCost(e.cost)}</span></div>
+      <div class="proj-top"><span class="proj-name">${escapeHtml(e.name)}</span>${e.cost > 0 ? `<span class="proj-cost">${fmtCost(e.cost)}</span>` : ""}</div>
       <div class="proj-stat"><div>Token<b>${human(e.tokens)}</b></div><div>会话<b>${e.sessions}</b></div><div>工具<b>${e.tools.length}</b></div></div>
       <div class="proj-share"><i style="width:${w}%"></i></div><div class="tags">${tags}</div>
       <div class="proj-last">最近活跃 · ${relDate(e.last)}</div></div>`;
   }).join("");
-  return `<div class="proj-head"><h2 style="margin:0;font-size:16px">项目轨迹</h2><span class="cnt">共 ${entries.length} 个项目</span></div><div class="proj-grid">${cards}</div>`;
+  return `<div class="proj-head"><h2 style="margin:0;font-size:16px">项目轨迹 · ${periodLabel(currentPeriod)}</h2><span class="cnt">共 ${entries.length} 个项目</span></div><div class="proj-grid">${cards}</div>`;
 }
 function dayDiff(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000); }
 function buildWrapped(cache) {
@@ -364,7 +372,7 @@ function render() {
   if (!content) return;
   if (!usageCache) { content.innerHTML = '<div class="empty">正在读取用量…</div>'; return; }
   const periods = $("periods");
-  if (periods) periods.style.display = currentView === "usage" ? "flex" : "none";
+  if (periods) periods.style.display = currentView === "wrapped" ? "none" : "flex";
   try {
     if (currentView === "projects") content.innerHTML = renderProjects();
     else if (currentView === "wrapped") content.innerHTML = renderWrapped();

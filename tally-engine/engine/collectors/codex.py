@@ -38,6 +38,7 @@ class CodexCollector(JsonlCollector):
         super().__init__()
         # Active model per file, set by model events and reused for token events.
         self._model_by_path: dict[str, str] = {}
+        self._project_by_path: dict[str, str] = {}
         self._latest_codex_quota: dict | None = None
         self._latest_codex_quota_timestamp: float = float("-inf")
         self._previous_total_by_path: dict[str, tuple] = {}
@@ -155,6 +156,7 @@ class CodexCollector(JsonlCollector):
         self._latest_codex_quota = None
         self._latest_codex_quota_timestamp = float("-inf")
         self._previous_total_by_path.clear()
+        self._project_by_path.clear()
         result = super().collect()
         # The live app-server value matches Codex Settings' "general usage
         # limit". Local logs are only a fallback and only their account-wide
@@ -177,17 +179,20 @@ class CodexCollector(JsonlCollector):
         self._observe_quota(obj)
 
         rtype = obj.get("type")
+        payload = obj.get("payload") or {}
         # Model-carrying events: track the active model for this file, no usage.
         if rtype in ("turn_context", "session_meta"):
             model = self._extract_model(obj)
             if model:
                 self._model_by_path[path] = model
+            project = payload.get("cwd")
+            if project:
+                self._project_by_path[path] = str(project)
             return None
 
         # Token usage events only.
         if rtype != "event_msg":
             return None
-        payload = obj.get("payload") or {}
         if payload.get("type") != "token_count":
             return None
         info = payload.get("info") or {}
@@ -229,6 +234,7 @@ class CodexCollector(JsonlCollector):
         return {
             "dt": dt, "in": uncached_input, "out": lo, "cr": lc, "cw": 0, "reason": lr,
             "cost": cost, "model": report_model, "session": path,
+            "project": self._project_by_path.get(path),
         }
 
 

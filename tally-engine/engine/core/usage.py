@@ -94,6 +94,10 @@ def merge_token_day(bucket, day, session=None):
     for model, mv in day.get("models", {}).items():
         add_model_usage(bucket["models"], model, mv.get("in", 0), mv.get("out", 0),
                         mv.get("cr", 0), mv.get("cw", 0), mv.get("reason", 0), mv.get("cost", 0))
+    standard = {"in", "out", "cr", "cw", "reason", "cost", "models", "sessions"}
+    _add_extra_usage(bucket, {
+        key: value for key, value in day.items() if key not in standard
+    })
 
 
 def bucketize_days(ranges, bounds, days, session=None):

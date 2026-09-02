@@ -184,7 +184,12 @@ html.browser-preview .set-input { font-size: 12px; padding: 6px 8px; }
 .cq-top strong { color: var(--txt); font-size: 17px; line-height: 1; white-space: nowrap; }
 .cq-reset { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cq-bar { height: 5px; margin-top: 7px; background: var(--bg2); border-radius: 999px; overflow: hidden; }
-.cq-bar i { display: block; height: 100%; border-radius: inherit; }
+.cq-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width .25s ease, background .25s ease;
+}
 
 .cstats { display: grid; grid-template-columns: 1fr 1fr; gap: 9px 18px; margin-bottom: 10px; }
 .stat { display: flex; align-items: center; gap: 9px; }
@@ -210,6 +215,7 @@ html.browser-preview .set-input { font-size: 12px; padding: 6px 8px; }
   font-size: 12px;
   line-height: 1.55;
 }
+.usage-note { color: var(--muted); font-size: 10.5px; line-height: 1.45; margin: -2px 0 8px; }
 
 /* 按模型 */
 .cmodels {

@@ -233,6 +233,7 @@ class QwenWorkCollector(JsonlCollector):
             "cost": 0.0,
             "model": self._model_by_path.get(path) or "qwenwork",
             "session": path,
+            "project": obj.get("cwd"),
         }
 
 
