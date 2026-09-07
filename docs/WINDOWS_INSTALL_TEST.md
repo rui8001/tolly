@@ -40,8 +40,12 @@ Both installers were produced by a clean clone of public `main`, rather than fro
 
 ## Follow-up work
 
-- The binaries are not Authenticode-signed, so Windows displayed an unknown-publisher elevation prompt. Code signing remains a release blocker.
+- The binaries are not Authenticode-signed, so Windows displayed an unknown-publisher elevation prompt. Signing remains planned distribution hardening; published releases explicitly disclose their unsigned status.
 - Repeat the build, install, launch, and uninstall checks in a clean Windows VM with no system Python installed. The installed application used the bundled sidecar in this test, but the host was not suitable for proving the absence of hidden Python dependencies.
 - Verify an in-place upgrade after an older tagged installer exists.
 - Version 0.1.0 does not expose an autostart feature, so startup-at-login behavior is outside this release's test scope.
 - The installer removes program files, registration, and shortcuts. WebView2 may retain application cache or other user data under `%LOCALAPPDATA%\app.tolly.windows`; the test-only cache was removed manually after verification.
+
+## Automated release coverage
+
+The release smoke workflow now tests both MSI and NSIS on independent clean Windows runners: tagged download, checksum, installation, bundled sidecar, launch with Python removed from PATH, and uninstall. Results are recorded by GitHub Actions. A passing process smoke does not assert correct real-account collection or replace interactive user testing. CI also builds the current source into Windows installers without publishing a Release.

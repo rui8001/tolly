@@ -78,7 +78,7 @@ def _wait_for_response(
             response = json.loads(line)
         except (TypeError, json.JSONDecodeError):
             continue
-        if response.get("id") == request_id:
+        if isinstance(response, dict) and response.get("id") == request_id:
             return response
 
 

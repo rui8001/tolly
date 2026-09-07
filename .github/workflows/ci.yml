@@ -19,8 +19,8 @@ jobs:
         python: ["3.10", "3.12"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
       - run: python -m unittest discover -s tests -v
@@ -29,15 +29,18 @@ jobs:
   desktop:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
         with:
           version: 11.19.0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
           cache-dependency-path: tally-win/pnpm-lock.yaml
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt
@@ -56,3 +59,10 @@ jobs:
         run: New-Item -ItemType File -Force -Path tally-win/src-tauri/binaries/tally-engine-x86_64-pc-windows-msvc.exe
       - run: cargo check --manifest-path tally-win/src-tauri/Cargo.toml
       - run: node scripts/check-privacy.mjs
+      - name: Install sidecar build dependencies
+        run: python -m pip install -e ".\tally-engine[build]"
+      - name: Verify Windows installer build
+        run: pnpm build
+        working-directory: tally-win
+        env:
+          TALLY_PYTHON: python
