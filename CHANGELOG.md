@@ -6,6 +6,16 @@
 
 ### Added
 
+- Full tracked-text privacy scanning with synthetic credential regressions.
+- Codex app-server malformed-response, timeout, initialization and process-cleanup tests; non-object JSON is now ignored safely.
+- MSI and NSIS release-install smoke matrix and a complete Windows installer build in CI.
+
+### Changed
+
+- Upgrade CI setup actions and Vite to 8.2.2, with production and standalone builds verified.
+
+### Earlier additions
+
 - English project overview and a privacy-safe real-user testing guide, Issue form, and zero-based public results ledger.
 - Codex for Open Source evidence ledger and a time-boxed public application-readiness roadmap.
 - Reviewable upstream provenance record with the fixed Tokei revision and identical pricing-data hash.

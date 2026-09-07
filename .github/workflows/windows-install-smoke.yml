@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Release tag whose MSI should be tested
+        description: Release tag whose MSI and NSIS installers should be tested
         required: true
         default: v1.2.0
 
@@ -22,26 +22,34 @@ permissions:
 
 jobs:
   install-smoke:
+    strategy:
+      fail-fast: false
+      matrix:
+        installer: [msi, nsis]
     runs-on: windows-latest
     timeout-minutes: 15
     env:
       RELEASE_TAG: ${{ inputs.release_tag || 'v1.2.0' }}
       GH_TOKEN: ${{ github.token }}
+      INSTALLER_KIND: ${{ matrix.installer }}
     steps:
       - uses: actions/checkout@v7
 
-      - name: Download tagged MSI and checksum
+      - name: Download tagged installer and checksum
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path smoke-assets | Out-Null
-          gh release download $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --dir smoke-assets --pattern "*.msi" --pattern "SHA256SUMS.txt"
-          $msi = @(Get-ChildItem smoke-assets -Filter *.msi)
-          if ($msi.Count -ne 1) { throw "Expected exactly one MSI, found $($msi.Count)." }
+          $pattern = if ($env:INSTALLER_KIND -eq 'msi') { '*.msi' } else { '*-setup.exe' }
+          gh release download $env:RELEASE_TAG --repo $env:GITHUB_REPOSITORY --dir smoke-assets --pattern $pattern --pattern "SHA256SUMS.txt"
+          if ($LASTEXITCODE -ne 0) { throw 'Release download failed.' }
+          $assets = @(Get-ChildItem smoke-assets -Filter $pattern)
+          if ($assets.Count -ne 1) { throw "Expected exactly one installer, found $($assets.Count)." }
+          "INSTALLER_PATH=$($assets[0].FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Verify release checksum
         shell: pwsh
         run: |
-          $msi = Get-ChildItem smoke-assets -Filter *.msi | Select-Object -First 1
+          $msi = Get-Item $env:INSTALLER_PATH
           $line = Get-Content smoke-assets/SHA256SUMS.txt | Where-Object { $_ -match [regex]::Escape($msi.Name) } | Select-Object -First 1
           if (-not $line) { throw "No checksum entry found for $($msi.Name)." }
           $expected = ($line.Trim() -split "\s+")[0].ToLowerInvariant()
@@ -52,9 +60,13 @@ jobs:
       - name: Install and verify bundled sidecar
         shell: pwsh
         run: |
-          $msi = Get-ChildItem smoke-assets -Filter *.msi | Select-Object -First 1
-          $install = Start-Process msiexec.exe -ArgumentList @('/i', $msi.FullName, '/qn', '/norestart', '/l*v', 'msi-install.log') -Wait -PassThru
-          if ($install.ExitCode -ne 0) { throw "MSI installation failed with exit code $($install.ExitCode)." }
+          $msi = Get-Item $env:INSTALLER_PATH
+          if ($env:INSTALLER_KIND -eq 'msi') {
+            $install = Start-Process msiexec.exe -ArgumentList @('/i', $msi.FullName, '/qn', '/norestart', '/l*v', 'msi-install.log') -Wait -PassThru
+          } else {
+            $install = Start-Process $msi.FullName -ArgumentList '/S' -Wait -PassThru
+          }
+          if ($install.ExitCode -ne 0) { throw "Installation failed with exit code $($install.ExitCode)." }
 
           $roots = @(
             (Join-Path $env:LOCALAPPDATA 'Tolly'),
@@ -67,6 +79,11 @@ jobs:
           if (-not $sidecar) { throw 'Bundled tally-engine sidecar was not found.' }
           "APP_PATH=$($app.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
           "MSI_PATH=$($msi.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          if ($env:INSTALLER_KIND -eq 'nsis') {
+            $uninstaller = Get-ChildItem $app.DirectoryName -Filter '*uninstall*.exe' -Recurse | Select-Object -First 1
+            if (-not $uninstaller) { throw 'NSIS uninstaller was not found.' }
+            "UNINSTALLER_PATH=$($uninstaller.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          }
           "Installed app: $($app.FullName)"
           "Bundled sidecar: $($sidecar.FullName)"
 
@@ -87,8 +104,15 @@ jobs:
         run: |
           if ($env:MSI_PATH -and (Test-Path $env:MSI_PATH)) {
             Get-Process tolly-windows -ErrorAction SilentlyContinue | Stop-Process -Force
-            $uninstall = Start-Process msiexec.exe -ArgumentList @('/x', $env:MSI_PATH, '/qn', '/norestart', '/l*v', 'msi-uninstall.log') -Wait -PassThru
-            if ($uninstall.ExitCode -ne 0) { throw "MSI uninstall failed with exit code $($uninstall.ExitCode)." }
+            if ($env:INSTALLER_KIND -eq 'msi') {
+              $uninstall = Start-Process msiexec.exe -ArgumentList @('/x', $env:MSI_PATH, '/qn', '/norestart', '/l*v', 'msi-uninstall.log') -Wait -PassThru
+            } elseif ($env:UNINSTALLER_PATH) {
+              $uninstall = Start-Process $env:UNINSTALLER_PATH -ArgumentList '/S' -Wait -PassThru
+            } else { throw 'No NSIS uninstaller path was recorded.' }
+            if ($uninstall.ExitCode -ne 0) { throw "Uninstall failed with exit code $($uninstall.ExitCode)." }
+            for ($attempt = 0; $attempt -lt 30 -and $env:APP_PATH -and (Test-Path $env:APP_PATH); $attempt++) {
+              Start-Sleep -Seconds 1
+            }
           }
           if ($env:APP_PATH -and (Test-Path $env:APP_PATH)) { throw 'tolly-windows.exe remained after uninstall.' }
 
@@ -96,7 +120,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v6
         with:
-          name: windows-install-smoke-logs
+          name: windows-install-smoke-logs-${{ matrix.installer }}
           path: |
             msi-install.log
             msi-uninstall.log
