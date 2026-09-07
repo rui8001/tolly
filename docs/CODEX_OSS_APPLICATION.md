@@ -20,6 +20,8 @@ Official program page: <https://developers.openai.com/community/codex-for-oss>
 
 ## Current public facts
 
+- The [2026-09-07 recheck](MAINTENANCE_RECHECK_2026-09-07.md) records refreshed counts, reproduced checks, and remaining limitations.
+
 - Tolly is an early-stage project; do not describe it as widely used.
 - Stars, forks, downloads, and user counts must be refreshed immediately before submission.
 - Real-user results are recorded in [USER_TEST_RESULTS.md](USER_TEST_RESULTS.md) and currently start at zero.

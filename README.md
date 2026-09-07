@@ -56,7 +56,7 @@ Windows 目录不再保存引擎副本。开发模式调用 `../tally-engine`，
 
 ## 开发
 
-前置条件：Python 3.10+、Node.js 20+、pnpm 11、Rust stable，以及带“使用 C++ 的桌面开发”组件的 Visual Studio Build Tools。
+前置条件：Python 3.10+、Node.js 24（与 CI 验证环境一致）、pnpm 11、Rust stable，以及带“使用 C++ 的桌面开发”组件的 Visual Studio Build Tools。
 
 ```powershell
 # 引擎

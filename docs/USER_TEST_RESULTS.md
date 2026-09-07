@@ -4,7 +4,7 @@ This ledger starts at zero and records only genuine, voluntary trials. It must n
 
 ## Current aggregate
 
-**Last updated:** 2026-09-02
+**Last checked:** 2026-09-07
 
 | Measure | Count |
 | --- | ---: |
