@@ -54,7 +54,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the contract and failure bo
 
 ## Develop and test
 
-Prerequisites: Python 3.10+, Node.js 20+, pnpm 11, Rust stable, and Visual Studio Build Tools with the Desktop development with C++ workload.
+Prerequisites: Python 3.10+, Node.js 24 (matching the CI-verified environment), pnpm 11, Rust stable, and Visual Studio Build Tools with the Desktop development with C++ workload.
 
 ```powershell
 # Engine tests and output
