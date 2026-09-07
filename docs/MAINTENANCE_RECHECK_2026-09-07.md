@@ -1,5 +1,20 @@
 # Maintenance recheck — 2026-09-07
 
+## Completed follow-through
+
+The initial review below is historical. Its code-maintenance findings were implemented in [PR #12](https://github.com/rui8001/tolly/pull/12), merged as `578d84e869b24e256150755e61662d88b7328d91`:
+
+- Privacy scanning now covers tracked text, including source and documentation, with three synthetic regression tests.
+- Codex subprocess parsing safely ignores non-object JSON responses; five new tests cover malformed responses, timeouts, startup failures and cleanup.
+- Vite 8.2.2 and all five pending dependency upgrades were integrated. The superseded dependency PRs were closed, not represented as individually merged.
+- Local suites passed: 24 Python tests and 14 JavaScript tests, plus production and standalone builds.
+- [Windows/Linux CI](https://github.com/rui8001/tolly/actions/runs/34082519761) passed all five jobs, including a full Windows desktop/installer build.
+- [MSI and NSIS smoke matrix](https://github.com/rui8001/tolly/actions/runs/34082519752) passed separate clean-runner install, launch and uninstall checks against published v1.2.0 assets.
+
+The new code is on main; it is not retroactively part of v1.2.0. Automated smoke tests are not interactive usability tests or external adoption. Remaining work is genuine Windows feedback, code signing and broader tool-specific real-world validation. Private application details remain outside GitHub.
+
+## Initial review (before the fixes above)
+
 Source reviewed: `6d4ebd24a6de73c77188c1c3e9349cbe205def07` (public main). The downloaded source's Git tree matched the public commit tree.
 
 ## Reproduced checks
