@@ -4,8 +4,10 @@ on:
     paths:
       - '.github/workflows/windows-candidate.yml'
       - 'scripts/prepare-candidate.mjs'
+      - 'scripts/candidate-binary-hashes.mjs'
       - 'scripts/test-windows-candidate.ps1'
       - 'tally-win/tests/candidate-version.test.mjs'
+      - 'tally-win/tests/candidate-binary-hashes.test.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -38,7 +40,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Source version check failed' }
           node scripts/check-privacy.mjs
           if ($LASTEXITCODE -ne 0) { throw 'Privacy check failed' }
-          node --test tally-win/tests/candidate-version.test.mjs
+          node --test tally-win/tests/candidate-version.test.mjs tally-win/tests/candidate-binary-hashes.test.mjs
           if ($LASTEXITCODE -ne 0) { throw 'Candidate regression tests failed' }
       - name: Parse Windows verification script
         shell: pwsh
@@ -72,13 +74,17 @@ jobs:
           if ($assets.Count -ne 2) { throw 'Expected MSI and NSIS installers' }
           $assets | Copy-Item -Destination candidate-assets
           $assets | ForEach-Object { "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.Name)" } | Set-Content candidate-assets/SHA256SUMS.txt -Encoding utf8NoBOM
+          $hashJson = node scripts/candidate-binary-hashes.mjs tally-win/src-tauri/target/release/tolly-windows.exe
+          if ($LASTEXITCODE -ne 0) { throw 'Candidate bundle hash calculation failed' }
+          $binaryHashes = $hashJson | ConvertFrom-Json
           $manifest = @{
             version = '1.2.1'; baseline = 'v1.2.0'; candidate_only = $true
             source_sha = (git rev-parse HEAD); workflow_run = $env:GITHUB_RUN_ID
-            app_sha256 = (Get-FileHash tally-win/src-tauri/target/release/tolly-windows.exe -Algorithm SHA256).Hash
+            app_sha256_unbundled = $binaryHashes.app_sha256_unbundled
+            app_sha256_by_installer = $binaryHashes.app_sha256_by_installer
             sidecar_sha256 = (Get-FileHash tally-win/src-tauri/binaries/tally-engine-x86_64-pc-windows-msvc.exe -Algorithm SHA256).Hash
           }
-          $manifest | ConvertTo-Json | Set-Content candidate-assets/candidate.json -Encoding utf8NoBOM
+          $manifest | ConvertTo-Json -Depth 4 | Set-Content candidate-assets/candidate.json -Encoding utf8NoBOM
           git diff -- tally-win/package.json tally-win/src-tauri/tauri.conf.json tally-win/src-tauri/Cargo.toml tally-win/src-tauri/Cargo.lock tally-engine/pyproject.toml tally-engine/engine/__init__.py | Set-Content candidate-assets/version-stamp.patch -Encoding utf8NoBOM
       - uses: actions/upload-artifact@v6
         with:

@@ -12,6 +12,8 @@ $manifest = Get-Content (Join-Path $candidateDir 'candidate.json') -Raw | Conver
 if ($manifest.version -ne '1.2.1' -or $manifest.baseline -ne 'v1.2.0') { throw 'Unexpected candidate versions' }
 if (-not $manifest.candidate_only -or $manifest.source_sha -ne (git rev-parse HEAD)) { throw 'Candidate source provenance mismatch' }
 $pattern = if ($Kind -eq 'msi') { '*.msi' } else { '*-setup.exe' }
+$expectedAppHash = $manifest.app_sha256_by_installer.$Kind
+if ($expectedAppHash -notmatch '^[a-fA-F0-9]{64}$') { throw 'Missing or invalid installer-specific application hash' }
 
 function Get-VerifiedInstaller([string]$Directory) {
     $files = @(Get-ChildItem -LiteralPath $Directory -File -Filter $pattern)
@@ -88,7 +90,8 @@ try {
     $installedPackage = $candidate
     $app = Find-App
     if ($app.VersionInfo.ProductVersion -notmatch '^1\.2\.1(?:\.0)?$') { throw 'Installed app is not candidate 1.2.1' }
-    if ((Get-FileHash $app.FullName -Algorithm SHA256).Hash -ne $manifest.app_sha256) { throw 'Installed binary does not match candidate build' }
+    $installedAppHash = (Get-FileHash $app.FullName -Algorithm SHA256).Hash
+    if ($installedAppHash -ne $expectedAppHash) { throw "Installed $Kind binary mismatch: expected $expectedAppHash, actual $installedAppHash" }
     $sidecars = @(Get-ChildItem $app.DirectoryName -Recurse -File -Filter 'tally-engine*.exe')
     if ($sidecars.Count -ne 1 -or (Get-FileHash $sidecars[0].FullName -Algorithm SHA256).Hash -ne $manifest.sidecar_sha256) {
         throw 'Installed sidecar does not match candidate build'
