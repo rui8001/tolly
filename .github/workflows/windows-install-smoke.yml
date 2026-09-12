@@ -120,6 +120,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7
         with:
+          archive: true
           name: windows-install-smoke-logs-${{ matrix.installer }}
           path: |
             msi-install.log
