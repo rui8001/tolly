@@ -86,8 +86,9 @@ jobs:
           }
           $manifest | ConvertTo-Json -Depth 4 | Set-Content candidate-assets/candidate.json -Encoding utf8NoBOM
           git diff -- tally-win/package.json tally-win/src-tauri/tauri.conf.json tally-win/src-tauri/Cargo.toml tally-win/src-tauri/Cargo.lock tally-engine/pyproject.toml tally-engine/engine/__init__.py | Set-Content candidate-assets/version-stamp.patch -Encoding utf8NoBOM
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
+          archive: true
           name: windows-candidate-${{ github.run_id }}
           path: candidate-assets/
           if-no-files-found: error
@@ -116,8 +117,9 @@ jobs:
         run: ./scripts/test-windows-candidate.ps1 -Kind '${{ matrix.installer }}' -Scenario '${{ matrix.scenario }}'
       - name: Retain synthetic installer logs on failure
         if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
+          archive: true
           name: candidate-logs-${{ matrix.installer }}-${{ matrix.scenario }}
           path: |
             *-install.log
