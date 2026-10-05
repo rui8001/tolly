@@ -15,7 +15,7 @@
 - [x] Install Visual Studio Build Tools with the “Desktop development with C++” workload.
 - [ ] Configure Windows code signing. Unsigned installers commonly trigger SmartScreen warnings.
 - [x] Verify NSIS/MSI install, bundled-sidecar launch, uninstall, single-instance behavior, and hide-to-tray/restore behavior on a real Windows host. See [Windows installer verification](WINDOWS_INSTALL_TEST.md).
-- [ ] Verify an in-place upgrade from an older tagged version once one exists.
+- [ ] Verify the MSI and NSIS upgrade paths from the published `v1.2.0` baseline using the [Windows candidate verification workflow](../.github/workflows/windows-candidate.yml); require all four clean/upgrade matrix jobs to pass, confirm the synthetic settings and local-data marker survive upgrade, and retain the Actions run URL. See [candidate test scope](WINDOWS_CANDIDATE_TEST.md).
 - [x] Confirm that 0.1.0 does not expose an autostart feature; test startup-at-login behavior only if that feature is implemented.
 - [ ] Tag only from a clean tree after CI passes.
 
