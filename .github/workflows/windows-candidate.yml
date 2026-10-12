@@ -1,5 +1,11 @@
 name: Windows candidate verification
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'tally-win/package.json'
+      - 'tally-win/pnpm-lock.yaml'
+      - 'tally-win/src-tauri/**'
   pull_request:
     paths:
       - '.github/workflows/windows-candidate.yml'
@@ -8,6 +14,9 @@ on:
       - 'scripts/test-windows-candidate.ps1'
       - 'tally-win/tests/candidate-version.test.mjs'
       - 'tally-win/tests/candidate-binary-hashes.test.mjs'
+      - 'tally-win/package.json'
+      - 'tally-win/pnpm-lock.yaml'
+      - 'tally-win/src-tauri/**'
   workflow_dispatch:
     inputs:
       ref:
