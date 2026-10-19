@@ -25,11 +25,11 @@
     "check": "pnpm version:check && pnpm web:test && pnpm web:build && pnpm preview:build && pnpm verify"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.12.3"
+    "@tauri-apps/api": "^2.12.4"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2.12.2",
+    "@tauri-apps/cli": "^2.12.3",
     "vite": "^8.3.4",
-    "vite-plugin-singlefile": "^2.3.3"
+    "vite-plugin-singlefile": "^2.3.4"
   }
 }
